@@ -1,5 +1,3 @@
-// src/ui/CoinInfo.tsx
-
 type Coin = {
   id: string;
   symbol: string;

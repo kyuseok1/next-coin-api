@@ -1,5 +1,3 @@
-// src/ui/CoinChart.tsx
-
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -55,7 +53,7 @@ const CoinChart = ({ prices }: CoinChartProps) => {
     },
   };
 
-  return <Line data={data} options={options} />;
+  return <Line data={data} options={options} className="w-full h-full" />;
 };
 
 export default CoinChart;

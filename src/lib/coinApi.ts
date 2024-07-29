@@ -18,7 +18,7 @@ export const getTopCoins = async () => {
       params: {
         vs_currency: "usd",
         order: "market_cap_desc",
-        per_page: 20,
+        per_page: 100, // 100개의 코인 데이터를 가져옴
         page: 1,
       },
     });
