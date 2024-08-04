@@ -22,9 +22,10 @@ ChartJS.register(
 
 type CoinChartProps = {
   prices: Array<{ timestamp: number; price: number }>;
+  period: string;
 };
 
-const CoinChart = ({ prices }: CoinChartProps) => {
+const CoinChart = ({ prices, period }: CoinChartProps) => {
   const data = {
     labels: prices.map((point) =>
       new Date(point.timestamp).toLocaleDateString()
@@ -48,7 +49,7 @@ const CoinChart = ({ prices }: CoinChartProps) => {
       },
       title: {
         display: true,
-        text: "Coin Price Chart",
+        text: `Coin Price Chart (${period})`,
       },
     },
   };

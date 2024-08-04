@@ -47,7 +47,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
           <CoinInfo coin={coin} />
           {coin.prices && (
             <div className="mt-4">
-              <CoinChart prices={coin.prices} />
+              <CoinChart prices={coin.prices} period="1d" />
             </div>
           )}
         </div>
