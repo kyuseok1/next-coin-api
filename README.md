@@ -118,11 +118,100 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 - 기술스택:
   - `React Hooks`: `useState`를 사용하여 알림 필터 상태 관리.
 
+<br><br>
 
+## CoinList 컴포넌트 중복 코인 트러블 슈팅 문제 해결
 
+### 문제 설명
+`CoinList` 컴포넌트를 개발하는 동안 동일한 코인이 리스트에 중복으로 렌더링되는 문제가 발생했습니다. 이 섹션은 문제 해결 과정을 문서화한 것입니다.
 
+### 초기 관찰
+컴포넌트가 동일한 코인의 항목을 중복으로 렌더링하고 있었습니다. 이는 예상치 못한 동작이었고, 깨끗하고 사용자 친화적인 인터페이스를 보장하기 위해 해결해야 했습니다.
 
+### 문제 식별 및 해결 과정
 
+1. **코인 데이터 로깅**:
+    - 먼저, `CoinList` 컴포넌트에서 받은 `coins` 배열을 확인하기 위해 로깅을 추가했습니다. 이를 통해 API 응답에서 중복이 발생하는지, 컴포넌트 내에서 중복이 발생하는지를 확인했습니다.
+    ```typescript
+    useEffect(() => {
+      console.log("Coins data:", coins);
+    }, [coins]);
+    ```
+
+2. **코인 정렬**:
+    - 선택한 정렬 기준(`market_cap` 또는 `price`)에 따라 코인을 정렬했습니다. 이 단계는 추가 처리를 하기 전에 코인의 일관된 순서를 보장합니다.
+    ```typescript
+    const sortedCoins = [...coins].sort((a, b) => {
+      if (sortBy === "market_cap") {
+        return (b.market_data?.market_cap?.usd || 0) - (a.market_data?.market_cap?.usd || 0);
+      } else if (sortBy === "price") {
+        return (b.market_data?.current_price?.usd || 0) - (a.market_data?.current_price?.usd || 0);
+      }
+      return 0;
+    });
+    ```
+
+3. **중복 코인 제거**:
+    - `coin.id`를 기준으로 중복 항목을 제거하여 고유한 항목을 포함하는 새로운 배열 `uniqueCoins`를 생성했습니다. 이를 위해 `Set`과 `map` 메서드를 사용했습니다.
+    ```typescript
+    const uniqueCoins = Array.from(new Set(sortedCoins.map((coin) => coin.id)))
+      .map((id) => sortedCoins.find((coin) => coin.id === id))
+      .filter((coin): coin is Coin => coin !== undefined);
+    ```
+
+4. **코인 필터링**:
+    - 사용자의 입력(`filterText`, `filterType`, `priceRange`)에 따라 추가 필터를 적용했습니다.
+    ```typescript
+    const filteredCoins = uniqueCoins.filter((coin) => {
+      const matchesFilterText = coin.name.toLowerCase().includes(filterText.toLowerCase());
+      const matchesFilterType = filterType === "all" || coin.type === filterType;
+      const matchesPriceRange = 
+        (coin.market_data?.current_price?.usd || 0) >= priceRange[0] &&
+        (coin.market_data?.current_price?.usd || 0) <= priceRange[1];
+      return matchesFilterText && matchesFilterType && matchesPriceRange;
+    });
+    ```
+
+5. **코인 렌더링**:
+    - 마지막으로, 각 코인이 고유한 키와 올바른 데이터를 갖도록 하여 필터링된 고유 코인 리스트를 렌더링했습니다.
+    ```typescript
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredCoins.map((coin) => (
+          <div key={coin.id} className="relative">
+            <Link href={`/coin/${coin.id}`} passHref>
+              <div
+                className={`cursor-pointer p-4 rounded-lg shadow-md ${
+                  darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+                }`}
+              >
+                <CoinInfo coin={coin} />
+                <p className="mt-2 text-sm">
+                  {t("24h Change")}: {coin.market_data?.price_change_percentage_24h?.toFixed(2)}%
+                </p>
+                {coin.prices && (
+                  <div className="mt-4">
+                    <CoinChart prices={coin.prices} period={chartPeriod} />
+                  </div>
+                )}
+              </div>
+            </Link>
+            <button
+              onClick={() => handleFavorite(coin.id)}
+              className={`absolute top-2 right-2 p-2 rounded-full ${
+                favorites.includes(coin.id) ? "bg-yellow-500" : "bg-gray-300"
+              }`}
+            >
+              ★
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+    ```
+
+### 결론
+이러한 단계를 구현함으로써 중복 코인 항목 문제를 성공적으로 해결했습니다. 핵심은 필터와 렌더링을 적용하기 전에 고유한 항목을 보장하는 것이었습니다. 이 접근 방식은 암호화폐 데이터를 깨끗하고 효율적이며 사용자 친화적으로 표현할 수 있도록 합니다.
 
 
 
