@@ -8,6 +8,8 @@ const resources = {
       "Light Mode": "Light Mode",
       "Dark Mode": "Dark Mode",
       "Enter coin ID (e.g., bitcoin)": "Enter coin ID (e.g., bitcoin)",
+      "Subscribe to Alerts": "Subscribe to Alerts",
+      "Enter your email": "Enter your email",
       Search: "Search",
       "Set Price Alert": "Set Price Alert",
       "Clear Alerts": "Clear Alerts",
@@ -37,6 +39,8 @@ const resources = {
       "Light Mode": "라이트 모드",
       "Dark Mode": "다크 모드",
       "Enter coin ID (e.g., bitcoin)": "코인 ID 입력 (예: bitcoin)",
+      "Subscribe to Alerts": "알림구독",
+      "Enter your email": "이메일을 입력하세요.",
       Search: "검색",
       "Set Price Alert": "가격 알림 설정",
       "Clear Alerts": "알림 지우기",
@@ -64,8 +68,8 @@ const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: "kr", // 초기 언어 설정
-  fallbackLng: "kr",
+  lng: "en", // 초기 언어 설정
+  fallbackLng: "en",
   interpolation: {
     escapeValue: false,
   },

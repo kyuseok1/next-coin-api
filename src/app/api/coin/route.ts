@@ -5,6 +5,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const coinId = searchParams.get("coinId");
 
+  console.log("API called with coinId:", coinId);
+
   if (coinId) {
     try {
       const coinData = await getCoinData(coinId);
@@ -46,6 +48,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ ...coinData, prices });
     } catch (error) {
+      console.error("Failed to fetch coin data:", error);
       return NextResponse.json(
         { error: "Failed to fetch coin data" },
         { status: 500 }
@@ -65,11 +68,16 @@ export async function GET(request: NextRequest) {
           current_price: {
             usd: coin.current_price,
           },
+          market_cap: {
+            usd: coin.market_cap,
+          },
+          price_change_percentage_24h: coin.price_change_percentage_24h,
         },
       }));
 
       return NextResponse.json(formattedCoins);
     } catch (error) {
+      console.error("Failed to fetch top coins data:", error);
       return NextResponse.json(
         { error: "Failed to fetch top coins data" },
         { status: 500 }
