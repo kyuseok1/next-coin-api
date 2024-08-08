@@ -31,9 +31,9 @@ const AlertManager: React.FC<AlertManagerProps> = ({
   });
 
   return (
-    <div className="mb-4">
+    <div className="flex flex-col items-center mb-4">
       <h2 className="text-2xl font-bold mb-2">{t("Price Alerts")}</h2>
-      <ul>
+      <ul className="w-full max-w-md">
         {filteredAlerts.map((alert, index) => (
           <li key={index} className="flex justify-between mb-2">
             <span>
@@ -55,7 +55,7 @@ const AlertManager: React.FC<AlertManagerProps> = ({
         value={filterAlerts}
         className={`border p-2 rounded-md ${
           darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-        }`}
+        } mt-2`}
       >
         <option value="all">{t("All Alerts")}</option>
         {coins.map((coin) => (

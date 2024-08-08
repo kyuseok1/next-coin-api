@@ -10,6 +10,7 @@ import UserControls from "./components/UserControls";
 import { Coin } from "../ui/CoinInfo";
 import { useTranslation } from "react-i18next";
 import i18n from "./i18n/i18n";
+
 type Alert = {
   id: string;
   price: number;
@@ -49,7 +50,15 @@ const Home = () => {
       try {
         const response = await fetch(`/api/coin?page=${page}`);
         const data = await response.json();
-        setCoins((prevCoins) => [...prevCoins, ...data]);
+
+        // 로그를 추가하여 데이터를 확인
+        console.log("fetchTopCoins data:", data);
+
+        if (Array.isArray(data)) {
+          setCoins((prevCoins) => [...prevCoins, ...data]);
+        } else {
+          throw new Error("Data format is incorrect");
+        }
       } catch (error) {
         console.error("Error fetching top coins data:", error);
         setError("Failed to fetch coin data. Please try again.");
@@ -73,7 +82,18 @@ const Home = () => {
     try {
       const response = await fetch(`/api/coin?coinId=${input}`);
       const data = await response.json();
-      setCoins([data]);
+
+      // 로그를 추가하여 데이터를 확인
+      console.log("handleSearch data:", data);
+
+      if (Array.isArray(data)) {
+        setCoins(data);
+      } else if (data && typeof data === "object") {
+        setCoins([data]);
+      } else {
+        throw new Error("Data format is incorrect");
+      }
+
       setRecentSearches((prev) => {
         const newSearches = [input, ...prev];
         const uniqueSearches = Array.from(new Set(newSearches));

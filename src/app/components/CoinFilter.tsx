@@ -34,17 +34,6 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
   return (
     <div>
       <div className="flex justify-center mb-4">
-        <input
-          type="text"
-          value={filterText}
-          onChange={(e) => setFilterText(e.target.value)}
-          placeholder={t("Filter coins by name")}
-          className={`border p-2 rounded-md ${
-            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-          }`}
-        />
-      </div>
-      <div className="flex justify-center mb-4">
         <select
           onChange={(e) => setFilterType(e.target.value)}
           value={filterType}

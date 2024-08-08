@@ -22,21 +22,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <div className="flex justify-between items-center mb-8">
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder={t("Enter coin ID (e.g., bitcoin)")}
-        className={`border p-2 rounded-l-md ${
-          darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-        }`}
-      />
-      <button
-        onClick={handleSearch}
-        className="bg-blue-500 text-white p-2 rounded-r-md"
-      >
-        {t("Search")}
-      </button>
+      <div className="flex">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={t("Enter coin ID (e.g., bitcoin)")}
+          className={`border p-2 rounded-l-md ${
+            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+          }`}
+        />
+        <button
+          onClick={handleSearch}
+          className="bg-blue-500 text-white p-2 rounded-r-md"
+        >
+          {t("Search")}
+        </button>
+      </div>
       <button
         onClick={handleSetAlert}
         className="bg-green-500 text-white p-2 ml-2 rounded-md"
