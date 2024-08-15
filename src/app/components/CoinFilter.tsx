@@ -22,6 +22,12 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const handleFilterTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedType = e.target.value;
+    console.log("Selected filter type:", selectedType); // 콘솔에 필터 타입 출력
+    setFilterType(selectedType);
+  };
+
   const handlePriceRangeChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     index: number
@@ -35,7 +41,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
     <div>
       <div className="flex justify-center mb-4">
         <select
-          onChange={(e) => setFilterType(e.target.value)}
+          onChange={handleFilterTypeChange} // 필터 타입 변경 핸들러
           value={filterType}
           className={`border p-2 rounded-md ${
             darkMode ? "bg-gray-800 text-white" : "bg-white text-black"

@@ -52,9 +52,23 @@ const CoinChart = ({ prices, period }: CoinChartProps) => {
         text: `Coin Price Chart (${period})`,
       },
     },
+    scales: {
+      y: {
+        beginAtZero: false,
+        ticks: {
+          callback: function (value: number | string) {
+            return `$${Number(value).toLocaleString()}`;
+          },
+        },
+      },
+    },
   };
 
-  return <Line data={data} options={options} className="w-full h-full" />;
+  return (
+    <div className="w-full h-full">
+      <Line data={data} options={options} />
+    </div>
+  );
 };
 
 export default CoinChart;

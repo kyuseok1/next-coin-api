@@ -1,10 +1,20 @@
 import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
 
 const COINGECKO_API_URL = "https://api.coingecko.com/api/v3";
 
-export const getCoinData = async (coinId: string) => {
+// 특정 기간 동안의 코인 가격 데이터를 가져오는 함수
+export const getCoinData = async (coinId: string, days: number) => {
   try {
-    const response = await axios.get(`${COINGECKO_API_URL}/coins/${coinId}`);
+    const response = await axios.get(
+      `${COINGECKO_API_URL}/coins/${coinId}/market_chart`,
+      {
+        params: {
+          vs_currency: "usd",
+          days: days, // 요청할 기간을 설정 (예: 1, 7, 30, 90)
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching coin data:", error);
@@ -12,6 +22,7 @@ export const getCoinData = async (coinId: string) => {
   }
 };
 
+// 상위 코인 데이터를 가져오는 함수
 export const getTopCoins = async () => {
   try {
     const response = await axios.get(`${COINGECKO_API_URL}/coins/markets`, {
@@ -28,3 +39,102 @@ export const getTopCoins = async () => {
     throw error;
   }
 };
+
+// 신규 코인 데이터를 가져오는 함수
+export const getNewCoins = async () => {
+  try {
+    const response = await axios.get(`${COINGECKO_API_URL}/coins/list/new`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching new coins data:", error);
+    throw error;
+  }
+};
+
+// GET 요청을 처리하는 핸들러
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const coinId = searchParams.get("coinId");
+  const period = searchParams.get("period") || "7d"; // 기간이 지정되지 않으면 기본적으로 7일로 설정
+  const fetchNewCoins = searchParams.get("fetchNewCoins") === "true"; // 신규 코인 데이터를 가져올지 여부
+
+  try {
+    if (fetchNewCoins) {
+      // 신규 코인 데이터를 가져오는 경우
+      const newCoins = await getNewCoins();
+
+      if (!newCoins || !Array.isArray(newCoins)) {
+        return NextResponse.json(
+          { error: "신규 코인 데이터를 가져오는데 실패했습니다." },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json(newCoins);
+    } else if (coinId) {
+      let days: number;
+      // 기간을 숫자로 변환
+      switch (period) {
+        case "1d":
+          days = 1;
+          break;
+        case "7d":
+          days = 7;
+          break;
+        case "30d":
+          days = 30;
+          break;
+        case "90d":
+          days = 90;
+          break;
+        default:
+          return NextResponse.json({ error: "잘못된 기간" }, { status: 400 });
+      }
+
+      // 선택한 기간의 데이터를 가져오기 위한 API 호출
+      const marketData = await getCoinData(coinId, days);
+
+      if (!marketData) {
+        return NextResponse.json(
+          { error: "코인 데이터를 찾을 수 없습니다." },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(marketData);
+    } else {
+      // 상위 코인 데이터를 가져오기 위한 API 호출
+      const topCoins = await getTopCoins();
+
+      if (!topCoins || !Array.isArray(topCoins)) {
+        return NextResponse.json(
+          { error: "상위 코인 데이터를 가져오는데 실패했습니다." },
+          { status: 500 }
+        );
+      }
+
+      const formattedCoins = topCoins.map((coin: any) => ({
+        id: coin.id,
+        symbol: coin.symbol,
+        name: coin.name,
+        image: {
+          thumb: coin.image,
+        },
+        market_data: {
+          current_price: {
+            usd: coin.current_price,
+          },
+          market_cap: {
+            usd: coin.market_cap,
+          },
+          price_change_percentage_24h: coin.price_change_percentage_24h,
+        },
+      }));
+
+      return NextResponse.json(formattedCoins);
+    }
+  } catch (error) {
+    console.error("API 오류:", error);
+    return NextResponse.json({ error: "서버 내부 오류" }, { status: 500 });
+  }
+}

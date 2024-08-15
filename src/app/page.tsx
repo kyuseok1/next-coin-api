@@ -44,37 +44,59 @@ const Home = () => {
   const [news, setNews] = useState<NewsArticle[]>([]);
 
   useEffect(() => {
-    const fetchTopCoins = async () => {
+    const fetchCoins = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/coin?page=${page}`);
-        const data = await response.json();
+        let response;
+        let data;
 
-        // 로그를 추가하여 데이터를 확인
-        console.log("fetchTopCoins data:", data);
+        if (filterType === "new") {
+          console.log(filterType);
+          response = await fetch(
+            "https://api.coingecko.com/api/v3/coins/list/new"
+          );
+          data = await response.json();
 
-        if (Array.isArray(data)) {
-          setCoins((prevCoins) => [...prevCoins, ...data]);
+          if (!Array.isArray(data)) {
+            throw new Error("Unexpected response format for new coins");
+          }
+
+          // Get details for each new coin ID
+          const coinDetailsPromises = data.map(async (coinId) => {
+            const coinResponse = await fetch(
+              `https://api.coingecko.com/api/v3/coins/${coinId}`
+            );
+            return await coinResponse.json();
+          });
+
+          const coinsDetails = await Promise.all(coinDetailsPromises);
+          setCoins(coinsDetails);
         } else {
-          throw new Error("Data format is incorrect");
+          response = await fetch(`/api/coin?page=${page}`);
+          data = await response.json();
+
+          if (Array.isArray(data)) {
+            setCoins(data);
+          } else if (
+            data &&
+            typeof data === "object" &&
+            Array.isArray(data.coins)
+          ) {
+            setCoins(data.coins);
+          } else {
+            throw new Error("Data format is incorrect");
+          }
         }
       } catch (error) {
-        console.error("Error fetching top coins data:", error);
+        console.error("Error fetching coins data:", error);
         setError("Failed to fetch coin data. Please try again.");
       }
       setIsLoading(false);
     };
 
-    fetchTopCoins();
-  }, [page]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPage(1); // 페이지 1로 리셋
-    }, 60000); // 60초마다 업데이트
-    return () => clearInterval(interval);
-  }, []);
+    fetchCoins();
+  }, [filterType, page]);
 
   const handleSearch = async () => {
     setIsLoading(true);
@@ -82,9 +104,6 @@ const Home = () => {
     try {
       const response = await fetch(`/api/coin?coinId=${input}`);
       const data = await response.json();
-
-      // 로그를 추가하여 데이터를 확인
-      console.log("handleSearch data:", data);
 
       if (Array.isArray(data)) {
         setCoins(data);
