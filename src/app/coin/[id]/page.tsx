@@ -27,18 +27,24 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
           );
           const data = await response.json();
 
-          console.log("Fetched coin data:", data); // 가져온 데이터를 콘솔에 기록
+          console.log("Fetched coin data:", data);
 
-          setCoin(data);
+          if (data && Array.isArray(data) && data.length > 0) {
+            const coinData = data[0]; // 첫 번째 코인을 선택
+            setCoin(coinData);
+          } else {
+            setCoin(null);
+          }
         } catch (error) {
           console.error("Error fetching coin data:", error);
+          setCoin(null);
         }
         setIsLoading(false);
       }
     };
 
     fetchCoinData();
-  }, [id, period]); // 기간이 변경될 때 데이터를 다시 가져옴
+  }, [id, period]);
 
   // 디바운스 함수의 타입 주석
   const debounce = <F extends (...args: any[]) => void>(

@@ -52,7 +52,6 @@ const Home = () => {
         let data;
 
         if (filterType === "new") {
-          console.log(filterType);
           response = await fetch(
             "https://api.coingecko.com/api/v3/coins/list/new"
           );
@@ -62,10 +61,9 @@ const Home = () => {
             throw new Error("Unexpected response format for new coins");
           }
 
-          // Get details for each new coin ID
-          const coinDetailsPromises = data.map(async (coinId) => {
+          const coinDetailsPromises = data.map(async (coin) => {
             const coinResponse = await fetch(
-              `https://api.coingecko.com/api/v3/coins/${coinId}`
+              `https://api.coingecko.com/api/v3/coins/${coin.id}`
             );
             return await coinResponse.json();
           });
@@ -76,6 +74,7 @@ const Home = () => {
           response = await fetch(`/api/coin?page=${page}`);
           data = await response.json();
 
+          // 데이터 구조 확인 및 수정
           if (Array.isArray(data)) {
             setCoins(data);
           } else if (
@@ -85,7 +84,9 @@ const Home = () => {
           ) {
             setCoins(data.coins);
           } else {
-            throw new Error("Data format is incorrect");
+            // 데이터를 빈 배열로 초기화하여 오류를 방지
+            console.warn("Unexpected data format:", data);
+            setCoins([]);
           }
         }
       } catch (error) {
@@ -101,28 +102,41 @@ const Home = () => {
   const handleSearch = async () => {
     setIsLoading(true);
     setError(null);
+    console.log("Search input:", input); // input 값 확인
+
     try {
+      // 코인 ID를 사용해 API 요청을 보냅니다.
       const response = await fetch(`/api/coin?coinId=${input}`);
       const data = await response.json();
 
-      if (Array.isArray(data)) {
-        setCoins(data);
-      } else if (data && typeof data === "object") {
-        setCoins([data]);
+      console.log("API Response:", response); // API 응답 확인
+      console.log("API Data:", data); // 응답 데이터 확인
+
+      if (response.ok && data) {
+        if (Array.isArray(data)) {
+          setCoins(data);
+          console.log("Set coins as array:", data);
+        } else if (data && typeof data === "object") {
+          setCoins([data]); // 단일 객체의 경우 배열로 변환하여 저장
+          console.log("Set coins as single object:", [data]);
+        }
       } else {
-        throw new Error("Data format is incorrect");
+        throw new Error("Data format is incorrect or coin not found");
       }
 
+      // 검색된 코인을 최근 검색어에 추가
       setRecentSearches((prev) => {
         const newSearches = [input, ...prev];
         const uniqueSearches = Array.from(new Set(newSearches));
-        return uniqueSearches.slice(0, 5);
+        console.log("Updated recent searches:", uniqueSearches);
+        return uniqueSearches.slice(0, 5); // 최대 5개의 검색어 저장
       });
     } catch (error) {
       console.error("Error fetching coin data:", error);
       setError("Failed to fetch coin data. Please try again.");
     }
     setIsLoading(false);
+    console.log("Loading state:", isLoading);
   };
 
   const handleSetAlert = () => {

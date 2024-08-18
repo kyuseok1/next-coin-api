@@ -26,6 +26,11 @@ type CoinChartProps = {
 };
 
 const CoinChart = ({ prices, period }: CoinChartProps) => {
+  // 데이터가 없는 경우 null 반환
+  if (!prices || prices.length === 0) {
+    return null;
+  }
+
   const data = {
     labels: prices.map((point) =>
       new Date(point.timestamp).toLocaleDateString()
