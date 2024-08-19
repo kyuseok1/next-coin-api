@@ -9,17 +9,9 @@ import SearchBar from "./components/SearchBar";
 import UserControls from "./components/UserControls";
 import { Coin } from "../ui/CoinInfo";
 import { useTranslation } from "react-i18next";
-import i18n from "./i18n/i18n";
 
-type Alert = {
-  id: string;
-  price: number;
-};
-
-type NewsArticle = {
-  title: string;
-  url: string;
-};
+type Alert = { id: string; price: number };
+type NewsArticle = { title: string; url: string };
 
 const Home = () => {
   const { t } = useTranslation();
@@ -43,190 +35,117 @@ const Home = () => {
   const [email, setEmail] = useState("");
   const [news, setNews] = useState<NewsArticle[]>([]);
 
+  const fetchCoins = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        filterType === "trending"
+          ? "/api/coin?fetchTrendingCoins=true"
+          : `/api/coin?page=${page}`
+      );
+      const data = await response.json();
+
+      const formattedCoins =
+        filterType === "trending"
+          ? Array.isArray(data.coins)
+            ? data.coins.map((coin: any) => ({
+                id: coin.item.id,
+                symbol: coin.item.symbol,
+                name: coin.item.name,
+                image: { thumb: coin.item.thumb },
+                market_data: {
+                  current_price: { usd: coin.item.price_btc * 1000000 },
+                },
+                type: "trending",
+              }))
+            : [] // data.coins가 배열이 아니면 빈 배열로 설정
+          : Array.isArray(data)
+          ? data
+          : []; // data가 배열이 아니면 빈 배열로 설정
+
+      setCoins(formattedCoins);
+    } catch (error) {
+      console.error("Error fetching coins data:", error);
+      setError(t("Failed to fetch coin data. Please try again."));
+    }
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const fetchCoins = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        let response;
-        let data;
-
-        if (filterType === "new") {
-          response = await fetch(
-            "https://api.coingecko.com/api/v3/coins/list/new"
-          );
-          data = await response.json();
-
-          if (!Array.isArray(data)) {
-            throw new Error("Unexpected response format for new coins");
-          }
-
-          const coinDetailsPromises = data.map(async (coin) => {
-            const coinResponse = await fetch(
-              `https://api.coingecko.com/api/v3/coins/${coin.id}`
-            );
-            return await coinResponse.json();
-          });
-
-          const coinsDetails = await Promise.all(coinDetailsPromises);
-          setCoins(coinsDetails);
-        } else {
-          response = await fetch(`/api/coin?page=${page}`);
-          data = await response.json();
-
-          // 데이터 구조 확인 및 수정
-          if (Array.isArray(data)) {
-            setCoins(data);
-          } else if (
-            data &&
-            typeof data === "object" &&
-            Array.isArray(data.coins)
-          ) {
-            setCoins(data.coins);
-          } else {
-            // 데이터를 빈 배열로 초기화하여 오류를 방지
-            console.warn("Unexpected data format:", data);
-            setCoins([]);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching coins data:", error);
-        setError("Failed to fetch coin data. Please try again.");
-      }
-      setIsLoading(false);
-    };
-
     fetchCoins();
   }, [filterType, page]);
 
   const handleSearch = async () => {
     setIsLoading(true);
     setError(null);
-    console.log("Search input:", input); // input 값 확인
-
     try {
-      // 코인 ID를 사용해 API 요청을 보냅니다.
-      const response = await fetch(`/api/coin?coinId=${input}`);
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${input}`
+      );
       const data = await response.json();
-
-      console.log("API Response:", response); // API 응답 확인
-      console.log("API Data:", data); // 응답 데이터 확인
-
-      if (response.ok && data) {
-        if (Array.isArray(data)) {
-          setCoins(data);
-          console.log("Set coins as array:", data);
-        } else if (data && typeof data === "object") {
-          setCoins([data]); // 단일 객체의 경우 배열로 변환하여 저장
-          console.log("Set coins as single object:", [data]);
-        }
-      } else {
-        throw new Error("Data format is incorrect or coin not found");
-      }
-
-      // 검색된 코인을 최근 검색어에 추가
-      setRecentSearches((prev) => {
-        const newSearches = [input, ...prev];
-        const uniqueSearches = Array.from(new Set(newSearches));
-        console.log("Updated recent searches:", uniqueSearches);
-        return uniqueSearches.slice(0, 5); // 최대 5개의 검색어 저장
-      });
+      setCoins(Array.isArray(data) ? data : [data]);
+      setRecentSearches((prev) =>
+        Array.from(new Set([input, ...prev])).slice(0, 5)
+      );
     } catch (error) {
       console.error("Error fetching coin data:", error);
-      setError("Failed to fetch coin data. Please try again.");
+      setError(t("Failed to fetch coin data. Please try again."));
     }
     setIsLoading(false);
-    console.log("Loading state:", isLoading);
+    console.log(handleSearch);
+    console.log(input);
   };
 
   const handleSetAlert = () => {
     const price = parseFloat(
-      prompt("Enter the price to set an alert for:", "0") || "0"
+      prompt(t("Enter the price to set an alert for:"), "0") || "0"
     );
     if (!isNaN(price)) {
-      const id = input || "global";
-      setAlerts((prev) => [...prev, { id, price }]);
-      if (Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
+      setAlerts((prev) => [...prev, { id: input || "global", price }]);
+      Notification.permission !== "granted" && Notification.requestPermission();
     }
-  };
-
-  const handleDeleteAlert = (index: number) => {
-    setAlerts((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleClearAlerts = () => {
-    setAlerts([]);
   };
 
   const handleFavorite = (id: string) => {
-    setFavorites((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((fav) => fav !== id);
-      } else {
-        return [...prev, id];
-      }
-    });
-  };
-
-  const handleLogin = () => {
-    setUser({ name: "User" });
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-  };
-
-  const handleSetEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value);
-  };
-
-  const handleSubscribeAlerts = () => {
-    if (email) {
-      alert(`Subscribed to alerts for ${email}`);
-    } else {
-      alert("Please enter a valid email address.");
-    }
-  };
-
-  const fetchNews = async (coinId: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`/api/coin/${coinId}/news`);
-      const data = await response.json();
-      setNews(data.articles);
-    } catch (error) {
-      console.error("Error fetching news:", error);
-      setError("Failed to fetch news. Please try again.");
-    }
-    setIsLoading(false);
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
+    );
   };
 
   useEffect(() => {
-    if (alerts.length > 0) {
-      const checkPriceAlerts = () => {
-        coins.forEach((coin) => {
-          alerts.forEach((alert, index) => {
-            if (
-              (alert.id === "global" || alert.id === coin.id) &&
-              coin.market_data?.current_price?.usd &&
-              coin.market_data.current_price.usd >= alert.price
-            ) {
-              if (Notification.permission === "granted") {
-                new Notification(
-                  `Price alert! ${coin.name} has reached $${alert.price}`
-                );
-              }
-              handleDeleteAlert(index);
+    if (alerts.length === 0 || coins.length === 0) return;
+
+    const checkPriceAlerts = () => {
+      alerts.forEach((alert, index) => {
+        const matchingCoin = coins.find(
+          (coin) => alert.id === "global" || alert.id === coin.id
+        );
+
+        if (matchingCoin) {
+          const currentPrice = matchingCoin.market_data?.current_price?.usd;
+
+          if (currentPrice !== undefined && currentPrice >= alert.price) {
+            if (Notification.permission === "granted") {
+              new Notification(
+                `${matchingCoin.name} ${t("has reached")} $${alert.price}`
+              );
             }
-          });
-        });
-      };
-      checkPriceAlerts();
-    }
-  }, [coins, alerts]);
+            setAlerts((prev) => prev.filter((_, i) => i !== index));
+          }
+        }
+      });
+    };
+
+    checkPriceAlerts();
+  }, [coins, alerts, t]);
+
+  const handleLogin = () => setUser({ name: "User" });
+  const handleLogout = () => setUser(null);
+  const handleSubscribeAlerts = () =>
+    email
+      ? alert(`${t("Subscribed to alerts for")} ${email}`)
+      : alert(t("Please enter a valid email address."));
 
   return (
     <div
@@ -238,21 +157,25 @@ const Home = () => {
         {t("Crypto Coin Information")}
       </h1>
       <UserControls
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        language={language}
-        setLanguage={setLanguage}
-        user={user}
-        handleLogin={handleLogin}
-        handleLogout={handleLogout}
+        {...{
+          darkMode,
+          setDarkMode,
+          language,
+          setLanguage,
+          user,
+          handleLogin,
+          handleLogout,
+        }}
       />
       <SearchBar
-        input={input}
-        setInput={setInput}
-        handleSearch={handleSearch}
-        handleSetAlert={handleSetAlert}
-        handleClearAlerts={handleClearAlerts}
-        darkMode={darkMode}
+        {...{
+          input,
+          setInput,
+          handleSearch,
+          handleSetAlert,
+          darkMode,
+          handleClearAlerts: () => setAlerts([]),
+        }}
       />
       <div className="flex justify-center mb-4">
         <select
@@ -267,21 +190,26 @@ const Home = () => {
         </select>
       </div>
       <CoinFilter
-        filterText={filterText}
-        setFilterText={setFilterText}
-        filterType={filterType}
-        setFilterType={setFilterType}
-        priceRange={priceRange}
-        setPriceRange={setPriceRange}
-        darkMode={darkMode}
+        {...{
+          filterText,
+          setFilterText,
+          filterType,
+          setFilterType,
+          priceRange,
+          setPriceRange,
+          darkMode,
+        }}
       />
       <AlertManager
-        alerts={alerts}
-        coins={coins}
-        darkMode={darkMode}
-        filterAlerts={filterAlerts}
-        handleDeleteAlert={handleDeleteAlert}
-        setFilterAlerts={setFilterAlerts}
+        {...{
+          alerts,
+          coins,
+          darkMode,
+          filterAlerts,
+          handleDeleteAlert: (index) =>
+            setAlerts((prev) => prev.filter((_, i) => i !== index)),
+          setFilterAlerts,
+        }}
       />
       <div className="flex justify-center mb-4">
         <select
@@ -300,7 +228,7 @@ const Home = () => {
         <input
           type="email"
           value={email}
-          onChange={handleSetEmail}
+          onChange={(e) => setEmail(e.target.value)}
           placeholder={t("Enter your email")}
           className={`border p-2 rounded-md ${
             darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
@@ -331,12 +259,7 @@ const Home = () => {
           </div>
         </div>
       )}
-      <FavoriteCoins
-        coins={coins}
-        favorites={favorites}
-        darkMode={darkMode}
-        chartPeriod={chartPeriod}
-      />
+      <FavoriteCoins {...{ coins, favorites, darkMode, chartPeriod }} />
       <NewsSection news={news} />
       {isLoading ? (
         <div className="flex justify-center items-center min-h-screen">
@@ -349,15 +272,17 @@ const Home = () => {
       ) : (
         <div>
           <CoinList
-            coins={coins}
-            darkMode={darkMode}
-            favorites={favorites}
-            handleFavorite={handleFavorite}
-            chartPeriod={chartPeriod}
-            filterText={filterText}
-            filterType={filterType}
-            priceRange={priceRange}
-            sortBy={sortBy}
+            {...{
+              coins,
+              darkMode,
+              favorites,
+              handleFavorite,
+              chartPeriod,
+              filterText,
+              filterType,
+              priceRange,
+              sortBy,
+            }}
           />
           <div className="flex justify-center mt-8">
             <button

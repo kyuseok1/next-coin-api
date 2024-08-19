@@ -49,7 +49,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
         >
           <option value="all">{t("All Types")}</option>
           <option value="major">{t("Major Coins")}</option>
-          <option value="new">{t("New Coins")}</option>
+          <option value="trending">{t("Trending Coins")}</option>{" "}
         </select>
       </div>
       <div className="flex justify-center mb-4">

@@ -40,13 +40,13 @@ export const getTopCoins = async () => {
   }
 };
 
-// 신규 코인 데이터를 가져오는 함수
-export const getNewCoins = async () => {
+// 트렌딩 코인 데이터를 가져오는 함수
+export const getTrendingCoins = async () => {
   try {
-    const response = await axios.get(`${COINGECKO_API_URL}/coins/list/new`);
+    const response = await axios.get(`${COINGECKO_API_URL}/search/trending`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching new coins data:", error);
+    console.error("Error fetching trending coins data:", error);
     throw error;
   }
 };
@@ -56,21 +56,22 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const coinId = searchParams.get("coinId");
   const period = searchParams.get("period") || "7d"; // 기간이 지정되지 않으면 기본적으로 7일로 설정
-  const fetchNewCoins = searchParams.get("fetchNewCoins") === "true"; // 신규 코인 데이터를 가져올지 여부
+  const fetchTrendingCoins = searchParams.get("fetchTrendingCoins") === "true"; // 트렌딩 코인 데이터를 가져올지 여부
 
   try {
-    if (fetchNewCoins) {
-      // 신규 코인 데이터를 가져오는 경우
-      const newCoins = await getNewCoins();
+    if (fetchTrendingCoins) {
+      // 트렌딩 코인 데이터를 가져오는 경우
+      const trendingCoins = await getTrendingCoins();
 
-      if (!newCoins || !Array.isArray(newCoins)) {
+      if (!trendingCoins || !Array.isArray(trendingCoins.coins)) {
         return NextResponse.json(
-          { error: "신규 코인 데이터를 가져오는데 실패했습니다." },
+          { error: "트렌딩 코인 데이터를 가져오는데 실패했습니다." },
           { status: 500 }
         );
       }
 
-      return NextResponse.json(newCoins);
+      // 트렌딩 코인 데이터를 응답으로 반환
+      return NextResponse.json(trendingCoins);
     } else if (coinId) {
       let days: number;
       // 기간을 숫자로 변환

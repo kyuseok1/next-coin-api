@@ -31,7 +31,7 @@ const UserControls: React.FC<UserControlsProps> = ({
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     setLanguage(event.target.value);
-    i18n.changeLanguage(event.target.value); // Add this line to change the language
+    i18n.changeLanguage(event.target.value);
   };
 
   return (
