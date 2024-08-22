@@ -1,3 +1,4 @@
+import React from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -26,9 +27,8 @@ type CoinChartProps = {
 };
 
 const CoinChart = ({ prices, period }: CoinChartProps) => {
-  // 데이터가 없는 경우 null 반환
   if (!prices || prices.length === 0) {
-    return null;
+    return <div>데이터가 없습니다.</div>;
   }
 
   const data = {

@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 import i18n from "../i18n/i18n";
+import axios from "axios";
 
 type UserControlsProps = {
   darkMode: boolean;
@@ -22,6 +24,33 @@ const UserControls: React.FC<UserControlsProps> = ({
   handleLogout,
 }) => {
   const { t } = useTranslation();
+  const router = useRouter();
+  const [marketData, setMarketData] = useState<{
+    marketCapChange: number;
+    btcDominance: number;
+    ethDominance: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchMarketData = async () => {
+      try {
+        const response = await axios.get(
+          "https://api.coingecko.com/api/v3/global"
+        );
+        const data = response.data.data;
+        console.log("Fetched global market data:", data);
+        setMarketData({
+          marketCapChange: data.market_cap_change_percentage_24h_usd,
+          btcDominance: data.market_cap_percentage.btc,
+          ethDominance: data.market_cap_percentage.eth,
+        });
+      } catch (error) {
+        console.error("Error fetching global market data:", error);
+      }
+    };
+
+    fetchMarketData();
+  }, []);
 
   const handleToggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -34,38 +63,92 @@ const UserControls: React.FC<UserControlsProps> = ({
     i18n.changeLanguage(event.target.value);
   };
 
+  const handleHomeClick = () => {
+    router.push("/");
+  };
+
   return (
-    <div className="flex justify-between items-center mb-8">
-      <button
-        onClick={handleToggleDarkMode}
-        className="bg-purple-500 text-white p-2 rounded-md"
-      >
-        {darkMode ? t("Light Mode") : t("Dark Mode")}
-      </button>
-      <select
-        value={language}
-        onChange={handleLanguageChange}
-        className="border p-2 rounded-md text-black"
-      >
-        <option value="en">English</option>
-        <option value="ko">한국어</option>
-      </select>
-      {user ? (
+    <header className="flex flex-col md:flex-row justify-between items-center p-4 text-white shadow-md">
+      <div className="flex items-center space-x-4 mb-4 md:mb-0">
         <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white p-2 rounded-md"
+          onClick={handleHomeClick}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600 transition duration-300"
         >
-          {t("Logout")}
+          {t("Home")}
         </button>
-      ) : (
         <button
-          onClick={handleLogin}
-          className="bg-green-500 text-white p-2 rounded-md"
+          onClick={handleToggleDarkMode}
+          className={`px-4 py-2 rounded-md shadow transition duration-300 ${
+            darkMode
+              ? "bg-white text-black hover:bg-gray-200"
+              : "bg-black text-white hover:bg-gray-800"
+          }`}
         >
-          {t("Login")}
+          {darkMode ? t("Light Mode") : t("Dark Mode")}
         </button>
-      )}
-    </div>
+      </div>
+      <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+        {marketData && (
+          <div
+            className={`flex flex-col md:flex-row items-center space-x-4 text-sm ${
+              darkMode
+                ? "bg-gray-800 text-white border-gray-600"
+                : "bg-white text-black border-gray-300"
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <span>{t("Market Cap Change (24h):")}</span>
+              <span
+                className={`${
+                  marketData.marketCapChange >= 0
+                    ? "text-green-500"
+                    : "text-red-500"
+                }`}
+              >
+                {marketData.marketCapChange.toFixed(2)}%
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span>{t("BTC Dominance:")}</span>
+              <span className="text-yellow-500">
+                {marketData.btcDominance.toFixed(2)}%
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span>{t("ETH Dominance:")}</span>
+              <span className="text-blue-400">
+                {marketData.ethDominance.toFixed(2)}%
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="flex items-center space-x-4">
+        <select
+          value={language}
+          onChange={handleLanguageChange}
+          className="border border-gray-300 p-2 rounded-md text-black shadow focus:outline-none focus:ring-2 focus:ring-purple-500"
+        >
+          <option value="en">English</option>
+          <option value="ko">한국어</option>
+        </select>
+        {user ? (
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded-md shadow hover:bg-red-600 transition duration-300"
+          >
+            {t("Logout")}
+          </button>
+        ) : (
+          <button
+            onClick={handleLogin}
+            className="bg-green-500 text-white px-4 py-2 rounded-md shadow hover:bg-green-600 transition duration-300"
+          >
+            {t("Login")}
+          </button>
+        )}
+      </div>
+    </header>
   );
 };
 

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AlertManager from "./components/AlertManager";
 import CoinFilter from "./components/CoinFilter";
 import CoinList from "./components/CoinList";
@@ -15,6 +16,8 @@ type NewsArticle = { title: string; url: string };
 
 const Home = () => {
   const { t } = useTranslation();
+  const router = useRouter();
+
   const [coins, setCoins] = useState<Coin[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -93,8 +96,6 @@ const Home = () => {
       setError(t("Failed to fetch coin data. Please try again."));
     }
     setIsLoading(false);
-    console.log(handleSearch);
-    console.log(input);
   };
 
   const handleSetAlert = () => {
@@ -153,9 +154,6 @@ const Home = () => {
         darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"
       } p-4`}
     >
-      <h1 className="text-4xl font-bold text-center mb-8">
-        {t("Crypto Coin Information")}
-      </h1>
       <UserControls
         {...{
           darkMode,
@@ -167,99 +165,103 @@ const Home = () => {
           handleLogout,
         }}
       />
-      <SearchBar
-        {...{
-          input,
-          setInput,
-          handleSearch,
-          handleSetAlert,
-          darkMode,
-          handleClearAlerts: () => setAlerts([]),
-        }}
-      />
-      <div className="flex justify-center mb-4">
-        <select
-          onChange={(e) => setSortBy(e.target.value)}
-          value={sortBy}
-          className={`border p-2 rounded-md ${
-            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-          }`}
-        >
-          <option value="market_cap">{t("Sort by Market Cap")}</option>
-          <option value="price">{t("Sort by Price")}</option>
-        </select>
-      </div>
-      <CoinFilter
-        {...{
-          filterText,
-          setFilterText,
-          filterType,
-          setFilterType,
-          priceRange,
-          setPriceRange,
-          darkMode,
-        }}
-      />
-      <AlertManager
-        {...{
-          alerts,
-          coins,
-          darkMode,
-          filterAlerts,
-          handleDeleteAlert: (index) =>
-            setAlerts((prev) => prev.filter((_, i) => i !== index)),
-          setFilterAlerts,
-        }}
-      />
-      <div className="flex justify-center mb-4">
-        <select
-          onChange={(e) => setChartPeriod(e.target.value)}
-          value={chartPeriod}
-          className={`border p-2 rounded-md ${
-            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-          }`}
-        >
-          <option value="1d">{t("1 Day")}</option>
-          <option value="1w">{t("1 Week")}</option>
-          <option value="1m">{t("1 Month")}</option>
-        </select>
-      </div>
-      <div className="flex justify-center mb-4">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder={t("Enter your email")}
-          className={`border p-2 rounded-md ${
-            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-          }`}
+      <div className=" rounded-lg shadow-md mb-8 border-b border-gray-300 pb-4">
+        <h1 className="text-4xl font-bold text-center mb-8">
+          {t("Crypto Coin Information")}
+        </h1>
+
+        <SearchBar
+          {...{
+            input,
+            setInput,
+            handleSearch,
+            handleSetAlert,
+            darkMode,
+            handleClearAlerts: () => setAlerts([]),
+          }}
         />
-        <button
-          onClick={handleSubscribeAlerts}
-          className="bg-blue-500 text-white p-2 rounded-md ml-2"
-        >
-          {t("Subscribe to Alerts")}
-        </button>
-      </div>
-      {recentSearches.length > 0 && (
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold mb-2">{t("Recent Searches")}</h2>
-          <div className="flex space-x-2">
-            {recentSearches.map((search) => (
-              <button
-                key={search}
-                onClick={() => setInput(search)}
-                className={`p-2 rounded-md ${
-                  darkMode ? "bg-gray-700 text-white" : "bg-gray-300 text-black"
-                }`}
-              >
-                {search}
-              </button>
-            ))}
-          </div>
+        <div className="flex justify-center mb-4">
+          <select
+            onChange={(e) => setSortBy(e.target.value)}
+            value={sortBy}
+            className={`border p-2 rounded-md ${
+              darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+            }`}
+          >
+            <option value="market_cap">{t("Sort by Market Cap")}</option>
+            <option value="price">{t("Sort by Price")}</option>
+          </select>
         </div>
-      )}
-      <FavoriteCoins {...{ coins, favorites, darkMode, chartPeriod }} />
+        <CoinFilter
+          {...{
+            filterText,
+            setFilterText,
+            filterType,
+            setFilterType,
+            priceRange,
+            setPriceRange,
+            darkMode,
+          }}
+        />
+        <AlertManager
+          {...{
+            alerts,
+            coins,
+            darkMode,
+            filterAlerts,
+            handleDeleteAlert: (index) =>
+              setAlerts((prev) => prev.filter((_, i) => i !== index)),
+            setFilterAlerts,
+          }}
+        />
+
+        <div className="flex justify-center mb-4">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t("Enter your email")}
+            className={`border p-2 rounded-md ${
+              darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+            }`}
+          />
+          <button
+            onClick={handleSubscribeAlerts}
+            className="bg-blue-500 text-white p-2 rounded-md ml-2"
+          >
+            {t("Subscribe to Alerts")}
+          </button>
+        </div>
+        {recentSearches.length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold mb-2">{t("Recent Searches")}</h2>
+            <div className="flex space-x-2">
+              {recentSearches.map((search) => (
+                <button
+                  key={search}
+                  onClick={() => router.push(`/coin/${search}`)}
+                  className={`p-2 rounded-md ${
+                    darkMode
+                      ? "bg-gray-700 text-white"
+                      : "bg-gray-300 text-black"
+                  }`}
+                >
+                  {search}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <FavoriteCoins
+        {...{
+          coins,
+          favorites,
+          darkMode,
+          chartPeriod,
+          handleFavorite,
+        }}
+      />
       <NewsSection news={news} />
       {isLoading ? (
         <div className="flex justify-center items-center min-h-screen">

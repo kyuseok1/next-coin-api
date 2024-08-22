@@ -15,38 +15,33 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
   const { id } = params;
   const [coin, setCoin] = useState<Coin | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d"); // 기본값을 7일로 설정
+  const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d");
 
   useEffect(() => {
     const fetchCoinData = async () => {
-      if (id) {
-        setIsLoading(true);
-        try {
-          const response = await fetch(
-            `/api/coin?coinId=${id}&period=${period}`
-          );
-          const data = await response.json();
+      if (!id) return;
 
-          console.log("Fetched coin data:", data);
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/coin?coinId=${id}&period=${period}`);
+        const data = await response.json();
 
-          if (data && Array.isArray(data) && data.length > 0) {
-            const coinData = data[0]; // 첫 번째 코인을 선택
-            setCoin(coinData);
-          } else {
-            setCoin(null);
-          }
-        } catch (error) {
-          console.error("Error fetching coin data:", error);
+        if (data && Array.isArray(data) && data.length > 0) {
+          const coinData = data[0];
+          setCoin(coinData);
+        } else {
           setCoin(null);
         }
-        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching coin data:", error);
+        setCoin(null);
       }
+      setIsLoading(false);
     };
 
     fetchCoinData();
   }, [id, period]);
 
-  // 디바운스 함수의 타입 주석
   const debounce = <F extends (...args: any[]) => void>(
     func: F,
     delay: number
@@ -60,7 +55,6 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
     }) as F;
   };
 
-  // 기간 변경 처리 함수의 타입 주석
   const handlePeriodChange = (newPeriod: "1d" | "7d" | "30d") => {
     if (newPeriod !== period) {
       setPeriod(newPeriod);

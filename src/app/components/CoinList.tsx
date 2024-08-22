@@ -90,12 +90,12 @@ const CoinList: React.FC<CoinListProps> = ({
   );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {uniqueCoins.map((coin) => (
-        <div key={coin.id} className="relative">
+        <div key={coin.id} className="relative group">
           <Link href={`/coin/${coin.id}`} passHref>
             <div
-              className={`cursor-pointer p-4 rounded-lg shadow-md ${
+              className={`cursor-pointer p-6 rounded-lg shadow-lg transform transition duration-300 ease-in-out group-hover:scale-105 ${
                 darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
               }`}
             >
@@ -105,15 +105,19 @@ const CoinList: React.FC<CoinListProps> = ({
                 {coin.market_data?.price_change_percentage_24h?.toFixed(2)}%
               </p>
               {coin.prices && (
-                <CoinChart prices={coin.prices} period={chartPeriod} />
+                <div className="mt-4">
+                  <CoinChart prices={coin.prices} period={chartPeriod} />
+                </div>
               )}
             </div>
           </Link>
           <button
             onClick={() => handleFavorite(coin.id)}
-            className={`absolute top-2 right-2 p-2 rounded-full ${
-              favorites.includes(coin.id) ? "bg-yellow-500" : "bg-gray-300"
-            }`}
+            className={`absolute top-4 right-4 p-2 rounded-full transition duration-300 ${
+              favorites.includes(coin.id)
+                ? "bg-yellow-500 text-white"
+                : "bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300"
+            } hover:bg-yellow-600`}
           >
             ★
           </button>

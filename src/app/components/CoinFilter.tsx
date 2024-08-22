@@ -38,38 +38,45 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
   };
 
   return (
-    <div>
+    <div className="p-6 ">
       <div className="flex justify-center mb-4">
         <select
-          onChange={handleFilterTypeChange} // 필터 타입 변경 핸들러
+          onChange={handleFilterTypeChange}
           value={filterType}
-          className={`border p-2 rounded-md ${
-            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-          }`}
+          className={`border p-2 rounded-lg w-1/2 md:w-1/3 text-center ${
+            darkMode
+              ? "bg-gray-800 text-white border-gray-600"
+              : "bg-white text-black border-gray-300"
+          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
         >
           <option value="all">{t("All Types")}</option>
-          <option value="major">{t("Major Coins")}</option>
-          <option value="trending">{t("Trending Coins")}</option>{" "}
+          <option value="trending">{t("Trending Coins")}</option>
         </select>
       </div>
-      <div className="flex justify-center mb-4">
-        <label className="mr-2">{t("Price Range")}</label>
+      <div className="flex justify-center items-center mb-4">
+        <label className="mr-2 text-gray-700 dark:text-gray-300">
+          {t("Price Range")}
+        </label>
         <input
           type="number"
           value={priceRange[0]}
           onChange={(e) => handlePriceRangeChange(e, 0)}
-          className={`border p-2 rounded-md ${
-            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-          }`}
+          className={`border p-2 rounded-lg w-24 text-center ${
+            darkMode
+              ? "bg-gray-800 text-white border-gray-600"
+              : "bg-white text-black border-gray-300"
+          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
         />
-        <span className="mx-2">-</span>
+        <span className="mx-2 text-gray-700 dark:text-gray-300">-</span>
         <input
           type="number"
           value={priceRange[1]}
           onChange={(e) => handlePriceRangeChange(e, 1)}
-          className={`border p-2 rounded-md ${
-            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-          }`}
+          className={`border p-2 rounded-lg w-24 text-center ${
+            darkMode
+              ? "bg-gray-800 text-white border-gray-600"
+              : "bg-white text-black border-gray-300"
+          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
         />
       </div>
     </div>

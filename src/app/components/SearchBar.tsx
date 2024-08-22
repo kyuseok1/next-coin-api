@@ -21,36 +21,40 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex justify-between items-center mb-8">
-      <div className="flex">
+    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+      <div className="flex w-full md:w-auto mb-4 md:mb-0">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={t("Enter coin ID (e.g., bitcoin)")}
-          className={`border p-2 rounded-l-md ${
-            darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-          }`}
+          className={`border p-3 rounded-l-lg flex-grow ${
+            darkMode
+              ? "bg-gray-800 text-white border-gray-600"
+              : "bg-white text-black border-gray-300"
+          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
         />
         <button
           onClick={handleSearch}
-          className="bg-blue-500 text-white p-2 rounded-r-md"
+          className="bg-blue-500 text-white p-3 rounded-r-lg hover:bg-blue-600 transition duration-300"
         >
           {t("Search")}
         </button>
       </div>
-      <button
-        onClick={handleSetAlert}
-        className="bg-green-500 text-white p-2 ml-2 rounded-md"
-      >
-        {t("Set Price Alert")}
-      </button>
-      <button
-        onClick={handleClearAlerts}
-        className="bg-red-500 text-white p-2 ml-2 rounded-md"
-      >
-        {t("Clear Alerts")}
-      </button>
+      <div className="flex">
+        <button
+          onClick={handleSetAlert}
+          className="bg-green-500 text-white p-3 rounded-lg ml-0 md:ml-2 hover:bg-green-600 transition duration-300"
+        >
+          {t("Set Price Alert")}
+        </button>
+        <button
+          onClick={handleClearAlerts}
+          className="bg-red-500 text-white p-3 rounded-lg ml-2 hover:bg-red-600 transition duration-300"
+        >
+          {t("Clear Alerts")}
+        </button>
+      </div>
     </div>
   );
 };
