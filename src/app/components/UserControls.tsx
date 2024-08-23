@@ -38,7 +38,7 @@ const UserControls: React.FC<UserControlsProps> = ({
           "https://api.coingecko.com/api/v3/global"
         );
         const data = response.data.data;
-        console.log("Fetched global market data:", data);
+
         setMarketData({
           marketCapChange: data.market_cap_change_percentage_24h_usd,
           btcDominance: data.market_cap_percentage.btc,

@@ -165,7 +165,7 @@ const Home = () => {
           handleLogout,
         }}
       />
-      <div className=" rounded-lg shadow-md mb-8 border-b border-gray-300 pb-4">
+      <div className=" rounded-lg shadow-md mb-8 border-b border-gray-300 pb-4 pt-8">
         <h1 className="text-4xl font-bold text-center mb-8">
           {t("Crypto Coin Information")}
         </h1>

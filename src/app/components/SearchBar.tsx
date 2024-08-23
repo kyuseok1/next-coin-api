@@ -41,20 +41,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
           {t("Search")}
         </button>
       </div>
-      <div className="flex">
-        <button
-          onClick={handleSetAlert}
-          className="bg-green-500 text-white p-3 rounded-lg ml-0 md:ml-2 hover:bg-green-600 transition duration-300"
-        >
-          {t("Set Price Alert")}
-        </button>
-        <button
-          onClick={handleClearAlerts}
-          className="bg-red-500 text-white p-3 rounded-lg ml-2 hover:bg-red-600 transition duration-300"
-        >
-          {t("Clear Alerts")}
-        </button>
-      </div>
     </div>
   );
 };

@@ -35,94 +35,135 @@ const CoinList: React.FC<CoinListProps> = ({
     if (filterType === "trending") {
       axios
         .get("https://api.coingecko.com/api/v3/search/trending")
-        .then((response) =>
-          setTrendingCoins(
-            response.data.coins.map((coin: any) => ({
-              id: coin.item.id,
-              symbol: coin.item.symbol,
-              name: coin.item.name,
-              image: { thumb: coin.item.thumb },
-              market_data: {
-                current_price: { usd: coin.item.price_btc * 50000 },
-                market_cap: { usd: 0 },
-                price_change_percentage_24h: 0,
-              },
-            }))
-          )
-        )
+        .then((response) => {
+          const trendingData = response.data.coins.map((coin: any) => ({
+            id: coin.item.id,
+            symbol: coin.item.symbol,
+            name: coin.item.name,
+            image: { thumb: coin.item.thumb },
+            market_data: {
+              current_price: { usd: coin.item.price_btc * 50000 },
+              market_cap: { usd: 0 },
+              price_change_percentage_24h: 0,
+            },
+          }));
+          setTrendingCoins(trendingData);
+        })
         .catch(console.error);
     }
   }, [filterType]);
 
-  const filterAndSortCoins = (coinList: Coin[]) =>
-    coinList
-      .filter((coin) => {
-        const matchesFilterText = coin.name
-          ?.toLowerCase()
-          .includes(filterText.toLowerCase());
-        const matchesFilterType =
-          filterType === "all" ||
-          filterType === "trending" ||
-          coin.type === filterType;
-        const matchesPriceRange =
-          (coin.market_data?.current_price?.usd || 0) >= priceRange[0] &&
-          (coin.market_data?.current_price?.usd || 0) <= priceRange[1];
-        return matchesFilterText && matchesFilterType && matchesPriceRange;
-      })
-      .sort((a, b) => {
-        const valueA =
-          sortBy === "market_cap"
-            ? b.market_data?.market_cap?.usd
-            : b.market_data?.current_price?.usd;
-        const valueB =
-          sortBy === "market_cap"
-            ? a.market_data?.market_cap?.usd
-            : a.market_data?.current_price?.usd;
-        return (valueA || 0) - (valueB || 0);
-      });
+  const filterAndSortCoins = (coinList: Coin[]) => {
+    const filteredCoins = coinList.filter((coin) => {
+      const matchesFilterText = coin.name
+        ?.toLowerCase()
+        .includes(filterText.toLowerCase());
+      const matchesFilterType =
+        filterType === "all" ||
+        filterType === "trending" ||
+        coin.type === filterType;
+      const matchesPriceRange =
+        (coin.market_data?.current_price?.usd || 0) >= priceRange[0] &&
+        (coin.market_data?.current_price?.usd || 0) <= priceRange[1];
+      return matchesFilterText && matchesFilterType && matchesPriceRange;
+    });
+
+    const sortedCoins = filteredCoins.sort((a, b) => {
+      const priceA = a.market_data?.current_price?.usd ?? -1;
+      const priceB = b.market_data?.current_price?.usd ?? -1;
+      const marketCapA = a.market_data?.market_cap?.usd ?? -1;
+      const marketCapB = b.market_data?.market_cap?.usd ?? -1;
+
+      if (sortBy === "market_cap") {
+        return marketCapB - marketCapA;
+      } else if (sortBy === "price") {
+        return priceB - priceA;
+      }
+
+      return 0;
+    });
+
+    return sortedCoins;
+  };
 
   const coinArray: Coin[] = [...coins, ...trendingCoins].filter(
     (coin): coin is Coin => typeof coin !== "string"
   );
 
-  const uniqueCoins = Array.from(new Set(coinArray.map((coin) => coin.id))).map(
-    (id) => coinArray.find((coin) => coin.id === id)!
-  );
+  const sortedAndFilteredCoins = filterAndSortCoins(coinArray);
+
+  const uniqueCoins = Array.from(
+    new Set(sortedAndFilteredCoins.map((coin) => coin.id))
+  ).map((id) => sortedAndFilteredCoins.find((coin) => coin.id === id)!);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {uniqueCoins.map((coin) => (
-        <div key={coin.id} className="relative group">
-          <Link href={`/coin/${coin.id}`} passHref>
-            <div
-              className={`cursor-pointer p-6 rounded-lg shadow-lg transform transition duration-300 ease-in-out group-hover:scale-105 ${
-                darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-              }`}
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-center ">
+        <thead>
+          <tr>
+            <th className="py-3 px-6 bg-gray-100">#</th>
+            <th className="py-3 px-6 bg-gray-100 0">{t("Coin")}</th>
+            <th className="py-3 px-6 bg-gray-100 ">{t("Price")}</th>
+            <th className="py-3 px-6 bg-gray-100">24h</th>
+            <th className="py-3 px-6 bg-gray-100 ">{t("Market Cap")}</th>
+            <th className="py-3 px-6 bg-gray-100">{t("Last 7 Days")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {uniqueCoins.map((coin, index) => (
+            <tr
+              key={coin.id}
+              className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <CoinInfo coin={coin} />
-              <p className="mt-2 text-sm">
-                {t("24h Change")}:{" "}
+              <td className="py-3 px-6">{index + 1}</td>
+              <td className="py-3 px-6">
+                <Link href={`/coin/${coin.id}`}>
+                  <div
+                    className={`flex items-center space-x-3 ${
+                      darkMode ? "text-white" : "text-black"
+                    }`}
+                  >
+                    <img
+                      src={coin.image?.thumb}
+                      alt={coin.name}
+                      className="w-6 h-6"
+                    />
+                    <span>{coin.name}</span>
+                  </div>
+                </Link>
+              </td>
+              <td className="py-3 px-6">
+                {coin.market_data?.current_price?.usd?.toLocaleString("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                })}
+              </td>
+              <td className="py-3 px-6">
                 {coin.market_data?.price_change_percentage_24h?.toFixed(2)}%
-              </p>
-              {coin.prices && (
-                <div className="mt-4">
-                  <CoinChart prices={coin.prices} period={chartPeriod} />
-                </div>
-              )}
-            </div>
-          </Link>
-          <button
-            onClick={() => handleFavorite(coin.id)}
-            className={`absolute top-4 right-4 p-2 rounded-full transition duration-300 ${
-              favorites.includes(coin.id)
-                ? "bg-yellow-500 text-white"
-                : "bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300"
-            } hover:bg-yellow-600`}
-          >
-            ★
-          </button>
-        </div>
-      ))}
+              </td>
+              <td className="py-3 px-6">
+                {coin.market_data?.market_cap?.usd?.toLocaleString()}
+              </td>
+              <td className="py-3 px-6">
+                {/* prices가 undefined일 경우 빈 배열로 대체 */}
+                <CoinChart prices={coin.prices ?? []} period={chartPeriod} />
+              </td>
+              <td className="py-3 px-6">
+                <button
+                  onClick={() => handleFavorite(coin.id)}
+                  className={`p-2 rounded-full transition duration-300 ${
+                    favorites.includes(coin.id)
+                      ? "bg-yellow-500 text-white"
+                      : "bg-gray-300 text-gray-700 dark:bg-gray-600 dark:text-gray-300"
+                  } hover:bg-yellow-600`}
+                >
+                  ★
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

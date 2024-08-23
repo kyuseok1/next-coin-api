@@ -41,6 +41,8 @@ const resources = {
       "Enter coin ID (e.g., bitcoin)": "코인 ID 입력 (예: bitcoin)",
       "Subscribe to Alerts": "알림구독",
       "Enter your email": "이메일을 입력하세요.",
+      "All Types": "모든 코인",
+      "Trending Coins": "트렌드 코인",
       Search: "검색",
       "Set Price Alert": "가격 알림 설정",
       "Clear Alerts": "알림 지우기",
