@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import CoinInfo, { Coin } from "../../ui/CoinInfo";
 import CoinChart from "../../ui/CoinChart";
-import axios from "axios";
+import { getTrendingCoins } from "../../lib/coinApi";
 
 type CoinListProps = {
   coins: (Coin | string)[];
@@ -33,28 +33,20 @@ const CoinList: React.FC<CoinListProps> = ({
 
   useEffect(() => {
     if (filterType === "trending") {
-      axios
-        .get("https://api.coingecko.com/api/v3/search/trending")
-        .then((response) => {
-          const trendingData = response.data.coins.map((coin: any) => ({
-            id: coin.item.id,
-            symbol: coin.item.symbol,
-            name: coin.item.name,
-            image: { thumb: coin.item.thumb },
-            market_data: {
-              current_price: { usd: coin.item.price_btc * 50000 },
-              market_cap: { usd: 0 },
-              price_change_percentage_24h: 0,
-            },
-          }));
+      getTrendingCoins()
+        .then((trendingData) => {
           setTrendingCoins(trendingData);
         })
         .catch(console.error);
     }
   }, [filterType]);
 
-  const filterAndSortCoins = (coinList: Coin[]) => {
-    const filteredCoins = coinList.filter((coin) => {
+  const filteredAndSortedCoins = useMemo(() => {
+    const coinArray: Coin[] = [...coins, ...trendingCoins].filter(
+      (coin): coin is Coin => typeof coin !== "string"
+    );
+
+    const filteredCoins = coinArray.filter((coin) => {
       const matchesFilterText = coin.name
         ?.toLowerCase()
         .includes(filterText.toLowerCase());
@@ -68,52 +60,47 @@ const CoinList: React.FC<CoinListProps> = ({
       return matchesFilterText && matchesFilterType && matchesPriceRange;
     });
 
-    const sortedCoins = filteredCoins.sort((a, b) => {
-      const priceA = a.market_data?.current_price?.usd ?? -1;
-      const priceB = b.market_data?.current_price?.usd ?? -1;
-      const marketCapA = a.market_data?.market_cap?.usd ?? -1;
-      const marketCapB = b.market_data?.market_cap?.usd ?? -1;
-
+    return filteredCoins.sort((a, b) => {
       if (sortBy === "market_cap") {
-        return marketCapB - marketCapA;
+        return (
+          (b.market_data?.market_cap?.usd ?? -1) -
+          (a.market_data?.market_cap?.usd ?? -1)
+        );
       } else if (sortBy === "price") {
-        return priceB - priceA;
+        return (
+          (b.market_data?.current_price?.usd ?? -1) -
+          (a.market_data?.current_price?.usd ?? -1)
+        );
       }
-
       return 0;
     });
+  }, [coins, trendingCoins, filterText, filterType, priceRange, sortBy]);
 
-    return sortedCoins;
-  };
-
-  const coinArray: Coin[] = [...coins, ...trendingCoins].filter(
-    (coin): coin is Coin => typeof coin !== "string"
+  const uniqueCoins = useMemo(
+    () =>
+      Array.from(new Set(filteredAndSortedCoins.map((coin) => coin.id))).map(
+        (id) => filteredAndSortedCoins.find((coin) => coin.id === id)!
+      ),
+    [filteredAndSortedCoins]
   );
-
-  const sortedAndFilteredCoins = filterAndSortCoins(coinArray);
-
-  const uniqueCoins = Array.from(
-    new Set(sortedAndFilteredCoins.map((coin) => coin.id))
-  ).map((id) => sortedAndFilteredCoins.find((coin) => coin.id === id)!);
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full text-center ">
+      <table className="min-w-full text-center">
         <thead>
           <tr>
             <th className="py-3 px-6 bg-gray-100">#</th>
-            <th className="py-3 px-6 bg-gray-100 0">{t("Coin")}</th>
-            <th className="py-3 px-6 bg-gray-100 ">{t("Price")}</th>
+            <th className="py-3 px-6 bg-gray-100 text-left">{t("Coin")}</th>
+            <th className="py-3 px-6 bg-gray-100">{t("Price")}</th>
             <th className="py-3 px-6 bg-gray-100">24h</th>
-            <th className="py-3 px-6 bg-gray-100 ">{t("Market Cap")}</th>
-            <th className="py-3 px-6 bg-gray-100">{t("Last 7 Days")}</th>
+            <th className="py-3 px-6 bg-gray-100">{t("Market Cap")}</th>
           </tr>
         </thead>
         <tbody>
           {uniqueCoins.map((coin, index) => (
             <tr
               key={coin.id}
-              className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="border-b dark:border-gray-7200 hover:bg-gray-300 dark:hover:bg-gray-300"
             >
               <td className="py-3 px-6">{index + 1}</td>
               <td className="py-3 px-6">
@@ -144,10 +131,7 @@ const CoinList: React.FC<CoinListProps> = ({
               <td className="py-3 px-6">
                 {coin.market_data?.market_cap?.usd?.toLocaleString()}
               </td>
-              <td className="py-3 px-6">
-                {/* prices가 undefined일 경우 빈 배열로 대체 */}
-                <CoinChart prices={coin.prices ?? []} period={chartPeriod} />
-              </td>
+
               <td className="py-3 px-6">
                 <button
                   onClick={() => handleFavorite(coin.id)}

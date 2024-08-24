@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import i18n from "../i18n/i18n";
-import axios from "axios";
+import { getGlobalMarketData } from "../../lib/coinApi";
 
 type UserControlsProps = {
   darkMode: boolean;
@@ -34,15 +34,12 @@ const UserControls: React.FC<UserControlsProps> = ({
   useEffect(() => {
     const fetchMarketData = async () => {
       try {
-        const response = await axios.get(
-          "https://api.coingecko.com/api/v3/global"
-        );
-        const data = response.data.data;
+        const data = await getGlobalMarketData();
 
         setMarketData({
-          marketCapChange: data.market_cap_change_percentage_24h_usd,
-          btcDominance: data.market_cap_percentage.btc,
-          ethDominance: data.market_cap_percentage.eth,
+          marketCapChange: data.data.market_cap_change_percentage_24h_usd,
+          btcDominance: data.data.market_cap_percentage.btc,
+          ethDominance: data.data.market_cap_percentage.eth,
         });
       } catch (error) {
         console.error("Error fetching global market data:", error);

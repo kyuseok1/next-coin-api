@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import AlertManager from "./components/AlertManager";
 import CoinFilter from "./components/CoinFilter";
@@ -10,6 +10,7 @@ import SearchBar from "./components/SearchBar";
 import UserControls from "./components/UserControls";
 import { Coin } from "../ui/CoinInfo";
 import { useTranslation } from "react-i18next";
+import { fetchCoins, fetchCoinById } from "../lib/coinApi";
 
 type Alert = { id: string; price: number };
 type NewsArticle = { title: string; url: string };
@@ -38,67 +39,42 @@ const Home = () => {
   const [email, setEmail] = useState("");
   const [news, setNews] = useState<NewsArticle[]>([]);
 
-  const fetchCoins = async () => {
+  const fetchCoinsData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        filterType === "trending"
-          ? "/api/coin?fetchTrendingCoins=true"
-          : `/api/coin?page=${page}`
-      );
-      const data = await response.json();
-
-      const formattedCoins =
-        filterType === "trending"
-          ? Array.isArray(data.coins)
-            ? data.coins.map((coin: any) => ({
-                id: coin.item.id,
-                symbol: coin.item.symbol,
-                name: coin.item.name,
-                image: { thumb: coin.item.thumb },
-                market_data: {
-                  current_price: { usd: coin.item.price_btc * 1000000 },
-                },
-                type: "trending",
-              }))
-            : [] // data.coins가 배열이 아니면 빈 배열로 설정
-          : Array.isArray(data)
-          ? data
-          : []; // data가 배열이 아니면 빈 배열로 설정
-
-      setCoins(formattedCoins);
+      const data = await fetchCoins(filterType, page);
+      setCoins(data);
     } catch (error) {
       console.error("Error fetching coins data:", error);
       setError(t("Failed to fetch coin data. Please try again."));
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [filterType, page, t]);
 
   useEffect(() => {
-    fetchCoins();
-  }, [filterType, page]);
+    fetchCoinsData();
+  }, [fetchCoinsData]);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/${input}`
-      );
-      const data = await response.json();
-      setCoins(Array.isArray(data) ? data : [data]);
+      const data = await fetchCoinById(input);
+      setCoins(data);
       setRecentSearches((prev) =>
         Array.from(new Set([input, ...prev])).slice(0, 5)
       );
     } catch (error) {
       console.error("Error fetching coin data:", error);
       setError(t("Failed to fetch coin data. Please try again."));
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [input, t]);
 
-  const handleSetAlert = () => {
+  const handleSetAlert = useCallback(() => {
     const price = parseFloat(
       prompt(t("Enter the price to set an alert for:"), "0") || "0"
     );
@@ -106,13 +82,13 @@ const Home = () => {
       setAlerts((prev) => [...prev, { id: input || "global", price }]);
       Notification.permission !== "granted" && Notification.requestPermission();
     }
-  };
+  }, [input, t]);
 
-  const handleFavorite = (id: string) => {
+  const handleFavorite = useCallback((id: string) => {
     setFavorites((prev) =>
       prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
     );
-  };
+  }, []);
 
   useEffect(() => {
     if (alerts.length === 0 || coins.length === 0) return;
@@ -141,12 +117,54 @@ const Home = () => {
     checkPriceAlerts();
   }, [coins, alerts, t]);
 
-  const handleLogin = () => setUser({ name: "User" });
-  const handleLogout = () => setUser(null);
-  const handleSubscribeAlerts = () =>
-    email
-      ? alert(`${t("Subscribed to alerts for")} ${email}`)
-      : alert(t("Please enter a valid email address."));
+  const handleLogin = useCallback(() => setUser({ name: "User" }), []);
+  const handleLogout = useCallback(() => setUser(null), []);
+
+  const handleSubscribeAlerts = useCallback(
+    () =>
+      email
+        ? alert(`${t("Subscribed to alerts for")} ${email}`)
+        : alert(t("Please enter a valid email address.")),
+    [email, t]
+  );
+
+  const loaderComponent = isLoading && (
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+    </div>
+  );
+
+  const errorComponent = error && (
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="text-red-500 text-2xl">{error}</div>
+    </div>
+  );
+
+  const coinListComponent = !isLoading && !error && (
+    <div>
+      <CoinList
+        {...{
+          coins,
+          darkMode,
+          favorites,
+          handleFavorite,
+          chartPeriod,
+          filterText,
+          filterType,
+          priceRange,
+          sortBy,
+        }}
+      />
+      <div className="flex justify-center mt-8">
+        <button
+          onClick={() => setPage((prev) => prev + 1)}
+          className="bg-blue-500 text-white p-2 rounded-md"
+        >
+          {t("Load More")}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -165,7 +183,7 @@ const Home = () => {
           handleLogout,
         }}
       />
-      <div className=" rounded-lg shadow-md mb-8 border-b border-gray-300 pb-4 pt-8">
+      <div className="rounded-lg shadow-md mb-8 border-b border-gray-300 pb-4 pt-8">
         <h1 className="text-4xl font-bold text-center mb-8">
           {t("Crypto Coin Information")}
         </h1>
@@ -263,39 +281,9 @@ const Home = () => {
         }}
       />
       <NewsSection news={news} />
-      {isLoading ? (
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-        </div>
-      ) : error ? (
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="text-red-500 text-2xl">{error}</div>
-        </div>
-      ) : (
-        <div>
-          <CoinList
-            {...{
-              coins,
-              darkMode,
-              favorites,
-              handleFavorite,
-              chartPeriod,
-              filterText,
-              filterType,
-              priceRange,
-              sortBy,
-            }}
-          />
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={() => setPage((prev) => prev + 1)}
-              className="bg-blue-500 text-white p-2 rounded-md"
-            >
-              {t("Load More")}
-            </button>
-          </div>
-        </div>
-      )}
+      {loaderComponent}
+      {errorComponent}
+      {coinListComponent}
     </div>
   );
 };
