@@ -35,9 +35,16 @@ const CoinList: React.FC<CoinListProps> = ({
     if (filterType === "trending") {
       getTrendingCoins()
         .then((trendingData) => {
-          setTrendingCoins(trendingData);
+          // Ensure trendingData is an array, even if it's empty or undefined
+          setTrendingCoins(Array.isArray(trendingData) ? trendingData : []);
         })
-        .catch(console.error);
+        .catch(() => {
+          // In case of error, set an empty array
+          setTrendingCoins([]);
+        });
+    } else {
+      // Clear trendingCoins if filterType is not 'trending'
+      setTrendingCoins([]);
     }
   }, [filterType]);
 
@@ -87,20 +94,24 @@ const CoinList: React.FC<CoinListProps> = ({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-center">
-        <thead>
+        <thead
+          className={
+            darkMode ? "bg-gray-700 text-white" : "bg-gray-100 text-black"
+          }
+        >
           <tr>
-            <th className="py-3 px-6 bg-gray-100">#</th>
-            <th className="py-3 px-6 bg-gray-100 text-left">{t("Coin")}</th>
-            <th className="py-3 px-6 bg-gray-100">{t("Price")}</th>
-            <th className="py-3 px-6 bg-gray-100">24h</th>
-            <th className="py-3 px-6 bg-gray-100">{t("Market Cap")}</th>
+            <th className="py-3 px-6">#</th>
+            <th className="py-3 px-6 text-left">{t("Coin")}</th>
+            <th className="py-3 px-6">{t("Price")}</th>
+            <th className="py-3 px-6">24h</th>
+            <th className="py-3 px-6">{t("Market Cap")}</th>
           </tr>
         </thead>
         <tbody>
           {uniqueCoins.map((coin, index) => (
             <tr
               key={coin.id}
-              className="border-b dark:border-gray-7200 hover:bg-gray-300 dark:hover:bg-gray-300"
+              className="border-b dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
             >
               <td className="py-3 px-6">{index + 1}</td>
               <td className="py-3 px-6">

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -27,24 +27,33 @@ type CoinChartProps = {
 };
 
 const CoinChart = ({ prices, period }: CoinChartProps) => {
-  if (!prices || prices.length === 0) {
-    return <div>데이터가 없습니다.</div>;
-  }
+  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState<any>(null);
 
-  const data = {
-    labels: prices.map((point) =>
-      new Date(point.timestamp).toLocaleDateString()
-    ),
-    datasets: [
-      {
-        label: "Price",
-        data: prices.map((point) => point.price),
-        borderColor: "rgba(75, 192, 192, 1)",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        fill: false,
-      },
-    ],
-  };
+  useEffect(() => {
+    if (prices && prices.length > 0) {
+      const data = {
+        labels: prices.map((point) =>
+          new Date(point.timestamp * 1000).toLocaleDateString()
+        ),
+        datasets: [
+          {
+            label: "Price",
+            data: prices.map((point) => point.price),
+            borderColor: "rgba(75, 192, 192, 1)",
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            fill: false,
+          },
+        ],
+      };
+      setChartData(data);
+      setLoading(false);
+    }
+  }, [prices]);
+
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
 
   const options = {
     responsive: true,
@@ -70,8 +79,8 @@ const CoinChart = ({ prices, period }: CoinChartProps) => {
   };
 
   return (
-    <div className="w-full h-full">
-      <Line data={data} options={options} />
+    <div className="w-full h-full" style={{ position: "relative" }}>
+      <Line data={chartData} options={options} />
     </div>
   );
 };

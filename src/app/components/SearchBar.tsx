@@ -21,8 +21,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-      <div className="flex w-full md:w-auto mb-4 md:mb-0">
+    <div className="flex flex-col md:flex-row justify-center items-center mb-8">
+      <div className="flex w-full md:w-auto mb-4 md:mb-0 justify-center">
         <input
           type="text"
           value={input}

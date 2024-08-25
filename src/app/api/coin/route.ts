@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
 
   try {
     if (fetchTrendingCoins) {
-      // 트렌딩 코인 데이터를 가져오는 경우
       const trendingCoins = await getTrendingCoins();
 
       if (!trendingCoins || !Array.isArray(trendingCoins.coins)) {
@@ -29,10 +28,8 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // 트렌딩 코인 데이터를 응답으로 반환
       return NextResponse.json(trendingCoins);
     } else if (fetchGlobalMarketData) {
-      // 글로벌 시장 데이터를 가져오는 경우
       const globalMarketData = await getGlobalMarketData();
 
       if (!globalMarketData) {
@@ -63,11 +60,16 @@ export async function GET(request: NextRequest) {
           return NextResponse.json({ error: "잘못된 기간" }, { status: 400 });
       }
 
+      console.log(
+        `Fetching data for coinId: ${coinId} with period: ${days} days`
+      );
+
       const marketData = await getCoinData(coinId, days);
 
       if (!marketData) {
+        console.error(`No data found for coinId: ${coinId}`);
         return NextResponse.json(
-          { error: "코인 데이터를 찾을 수 없습니다." },
+          { error: `코인 데이터를 찾을 수 없습니다: ${coinId}` },
           { status: 404 }
         );
       }
