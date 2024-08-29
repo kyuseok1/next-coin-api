@@ -1,22 +1,44 @@
 import React from "react";
 
+type AdditionalData = {
+  market_cap_rank: number;
+  hashing_algorithm: string;
+  genesis_date: string;
+  developer_data: {
+    stars: number;
+    forks: number;
+    total_issues: number;
+    [key: string]: any;
+  };
+  description: {
+    en: string;
+    [key: string]: any;
+  };
+  links: {
+    homepage: string[];
+    whitepaper: string;
+  };
+  [key: string]: any;
+};
+
 type Coin = {
   id: string;
   symbol: string;
   name: string;
-  image?: {
+  image: {
     thumb: string;
   };
-  market_data?: {
-    current_price?: {
-      usd?: number;
+  market_data: {
+    current_price: {
+      usd: number;
     };
-    market_cap?: {
-      usd?: number;
+    market_cap: {
+      usd: number;
     };
-    price_change_percentage_24h?: number;
+    price_change_percentage_24h: number;
   };
-  prices?: Array<{ timestamp: number; price: number }>;
+  prices: { timestamp: number; price: number }[];
+  additional?: AdditionalData;
   type?: string;
 };
 

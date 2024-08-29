@@ -21,7 +21,7 @@ const Home = () => {
 
   const [coins, setCoins] = useState<Coin[]>([]);
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // 초기 로딩 상태를 true로 설정
   const [sortBy, setSortBy] = useState("market_cap");
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -44,7 +44,8 @@ const Home = () => {
     setError(null);
     try {
       const data = await fetchCoins(filterType, page);
-      setCoins(data);
+      console.log("Fetched coins:", data);
+      setCoins([...data]);
     } catch (error) {
       console.error("Error fetching coins data:", error);
       setError(t("Failed to fetch coin data. Please try again."));
@@ -55,6 +56,9 @@ const Home = () => {
 
   useEffect(() => {
     fetchCoinsData();
+    const intervalId = setInterval(fetchCoinsData, 60000);
+
+    return () => clearInterval(intervalId);
   }, [fetchCoinsData]);
 
   const handleSearch = useCallback(async () => {
@@ -76,7 +80,7 @@ const Home = () => {
 
   const handleSetAlert = useCallback(() => {
     const price = parseFloat(
-      prompt(t("Enter the price to set an alert for:"), "0") || "0"
+      prompt(t("알림을 설정할 가격을 입력하세요:"), "0") || "0"
     );
     if (!isNaN(price)) {
       setAlerts((prev) => [...prev, { id: input || "global", price }]);
@@ -105,7 +109,9 @@ const Home = () => {
           if (currentPrice !== undefined && currentPrice >= alert.price) {
             if (Notification.permission === "granted") {
               new Notification(
-                `${matchingCoin.name} ${t("has reached")} $${alert.price}`
+                `${matchingCoin.name} ${t("이 설정한 가격에 도달했습니다:")} $${
+                  alert.price
+                }`
               );
             }
             setAlerts((prev) => prev.filter((_, i) => i !== index));
@@ -117,6 +123,20 @@ const Home = () => {
     checkPriceAlerts();
   }, [coins, alerts, t]);
 
+  const handleUpdateAlertPrice = (index: number, newPrice: number) => {
+    setAlerts((prev) =>
+      prev.map((alert, i) =>
+        i === index ? { ...alert, price: newPrice } : alert
+      )
+    );
+  };
+  const handleAddAlert = (id: string, price: number) => {
+    const newAlert: Alert = { id, price };
+    setAlerts((prevAlerts) => [...prevAlerts, newAlert]);
+  };
+  const handleDeleteAlert = (index: number) => {
+    setAlerts((prevAlerts) => prevAlerts.filter((_, i) => i !== index));
+  };
   const handleLogin = useCallback(() => setUser({ name: "User" }), []);
   const handleLogout = useCallback(() => setUser(null), []);
 
@@ -155,14 +175,7 @@ const Home = () => {
           sortBy,
         }}
       />
-      <div className="flex justify-center mt-8">
-        <button
-          onClick={() => setPage((prev) => prev + 1)}
-          className="bg-blue-500 text-white p-2 rounded-md"
-        >
-          {t("Load More")}
-        </button>
-      </div>
+      <div className="flex justify-center mt-8"></div>
     </div>
   );
 
@@ -222,15 +235,14 @@ const Home = () => {
           }}
         />
         <AlertManager
-          {...{
-            alerts,
-            coins,
-            darkMode,
-            filterAlerts,
-            handleDeleteAlert: (index) =>
-              setAlerts((prev) => prev.filter((_, i) => i !== index)),
-            setFilterAlerts,
-          }}
+          alerts={alerts}
+          coins={coins}
+          darkMode={darkMode}
+          filterAlerts={filterAlerts}
+          handleDeleteAlert={handleDeleteAlert}
+          setFilterAlerts={setFilterAlerts}
+          handleUpdateAlertPrice={handleUpdateAlertPrice}
+          handleAddAlert={handleAddAlert}
         />
 
         <div className="flex justify-center mb-4">
@@ -280,7 +292,7 @@ const Home = () => {
           handleFavorite,
         }}
       />
-      <NewsSection news={news} />
+      <NewsSection />
       {loaderComponent}
       {errorComponent}
       {coinListComponent}

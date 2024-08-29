@@ -9,7 +9,9 @@ import {
   Title,
   Tooltip,
   Legend,
+  TimeScale,
 } from "chart.js";
+import "chartjs-adapter-date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -18,7 +20,8 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TimeScale
 );
 
 type CoinChartProps = {
@@ -29,31 +32,41 @@ type CoinChartProps = {
 const CoinChart = ({ prices, period }: CoinChartProps) => {
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState<any>(null);
+  const [chartReady, setChartReady] = useState(false);
 
   useEffect(() => {
     if (prices && prices.length > 0) {
+      console.log(
+        "타임스탬프 데이터:",
+        prices.map((point) => point.timestamp)
+      );
+
       const data = {
-        labels: prices.map((point) =>
-          new Date(point.timestamp * 1000).toLocaleDateString()
-        ),
+        labels: prices.map((point) => new Date(point.timestamp * 1000)),
         datasets: [
           {
             label: "Price",
-            data: prices.map((point) => point.price),
+            data: prices.map((point) => ({
+              x: new Date(point.timestamp * 1000),
+              y: point.price,
+            })),
             borderColor: "rgba(75, 192, 192, 1)",
             backgroundColor: "rgba(75, 192, 192, 0.2)",
             fill: false,
           },
         ],
       };
+
       setChartData(data);
       setLoading(false);
     }
   }, [prices]);
 
-  if (loading) {
-    return <div>로딩 중...</div>;
-  }
+  useEffect(() => {
+    if (!loading && chartData) {
+      setChartReady(true);
+    }
+  }, [loading, chartData]);
 
   const options = {
     responsive: true,
@@ -67,6 +80,16 @@ const CoinChart = ({ prices, period }: CoinChartProps) => {
       },
     },
     scales: {
+      x: {
+        type: "time" as const,
+        time: {
+          unit: "day" as const,
+        },
+        title: {
+          display: true,
+          text: "Date",
+        },
+      },
       y: {
         beginAtZero: false,
         ticks: {
@@ -78,9 +101,17 @@ const CoinChart = ({ prices, period }: CoinChartProps) => {
     },
   };
 
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
+
   return (
     <div className="w-full h-full" style={{ position: "relative" }}>
-      <Line data={chartData} options={options} />
+      {chartReady ? (
+        <Line data={chartData} options={options} />
+      ) : (
+        <div>차트 준비 중...</div>
+      )}
     </div>
   );
 };

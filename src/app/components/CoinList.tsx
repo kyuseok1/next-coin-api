@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import CoinInfo, { Coin } from "../../ui/CoinInfo";
-import CoinChart from "../../ui/CoinChart";
+
 import { getTrendingCoins } from "../../lib/coinApi";
 
 type CoinListProps = {
@@ -35,15 +35,12 @@ const CoinList: React.FC<CoinListProps> = ({
     if (filterType === "trending") {
       getTrendingCoins()
         .then((trendingData) => {
-          // Ensure trendingData is an array, even if it's empty or undefined
           setTrendingCoins(Array.isArray(trendingData) ? trendingData : []);
         })
         .catch(() => {
-          // In case of error, set an empty array
           setTrendingCoins([]);
         });
     } else {
-      // Clear trendingCoins if filterType is not 'trending'
       setTrendingCoins([]);
     }
   }, [filterType]);

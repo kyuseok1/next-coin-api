@@ -13,20 +13,32 @@ export const fetchCoins = async (filterType: string, page: number) => {
 
   try {
     const response = await fetch(endpoint);
+
+    if (!response.ok) {
+      throw new Error(`API 요청 실패: ${response.statusText}`);
+    }
+
     const data = await response.json();
 
-    return Array.isArray(data)
-      ? data
-      : data.coins.map((coin: any) => ({
-          id: coin.item.id,
-          symbol: coin.item.symbol,
-          name: coin.item.name,
-          image: { thumb: coin.item.thumb },
-          market_data: {
-            current_price: { usd: coin.item.price_btc * 1000000 },
-          },
-          type: "trending",
-        }));
+    console.log("API 응답 데이터:", data);
+
+    if (data && Array.isArray(data.coins)) {
+      return data.coins.map((coin: any) => ({
+        id: coin.item.id,
+        symbol: coin.item.symbol,
+        name: coin.item.name,
+        image: { thumb: coin.item.thumb },
+        market_data: {
+          current_price: { usd: coin.item.price_btc * 1000000 },
+        },
+        type: "trending",
+      }));
+    } else if (Array.isArray(data)) {
+      return data;
+    } else {
+      console.error("Unexpected data structure:", data);
+      throw new Error("Unexpected data structure received from API");
+    }
   } catch (error) {
     console.error("코인 데이터를 가져오는 중 오류 발생:", error);
     throw error;
@@ -36,6 +48,12 @@ export const fetchCoins = async (filterType: string, page: number) => {
 export const fetchCoinById = async (coinId: string) => {
   try {
     const response = await fetch(`${COINGECKO_API_URL}/coins/${coinId}`);
+
+    // 응답 상태 확인
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
     return Array.isArray(data) ? data : [data];
   } catch (error) {
