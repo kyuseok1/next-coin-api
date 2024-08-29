@@ -152,3 +152,38 @@ export const getGlobalMarketData = async () => {
     throw error;
   }
 };
+export const nftList = async () => {
+  const cacheKey = "nftList";
+
+  if (cache[cacheKey]) {
+    return cache[cacheKey];
+  }
+
+  try {
+    const response = await axios.get(`${COINGECKO_API_URL}/nfts/list`);
+
+    const data = response.data;
+    cache[cacheKey] = data;
+    return data;
+  } catch (error) {
+    console.error("Error fetching global market data:", error);
+    throw error;
+  }
+};
+export const fetchNftById = async (id: string) => {
+  const cacheKey = `nft-${id}`;
+
+  if (cache[cacheKey]) {
+    return cache[cacheKey];
+  }
+
+  try {
+    const response = await axios.get(`${COINGECKO_API_URL}/nfts/${id}`);
+    const data = response.data;
+    cache[cacheKey] = data;
+    return data;
+  } catch (error) {
+    console.error(`Error fetching NFT data for ID ${id}:`, error);
+    throw error;
+  }
+};

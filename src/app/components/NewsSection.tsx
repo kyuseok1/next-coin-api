@@ -64,7 +64,7 @@ const NewsSection = () => {
                 <img
                   src={article.thumb_2x}
                   alt={article.title}
-                  className="mb-1 w-full h-24 object-cover"
+                  className="mb-1 w-full h-48 object-cover"
                 />
               )}
               <h3 className="text-base font-medium">{article.title}</h3>{" "}

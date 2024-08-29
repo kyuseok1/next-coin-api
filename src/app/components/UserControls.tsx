@@ -29,6 +29,8 @@ const UserControls: React.FC<UserControlsProps> = ({
     marketCapChange: number;
     btcDominance: number;
     ethDominance: number;
+    activeCryptocurrencies: number;
+    markets: number;
   } | null>(null);
 
   useEffect(() => {
@@ -40,6 +42,8 @@ const UserControls: React.FC<UserControlsProps> = ({
           marketCapChange: data.data.market_cap_change_percentage_24h_usd,
           btcDominance: data.data.market_cap_percentage.btc,
           ethDominance: data.data.market_cap_percentage.eth,
+          activeCryptocurrencies: data.data.active_cryptocurrencies,
+          markets: data.data.markets,
         });
       } catch (error) {
         console.error("Error fetching global market data:", error);
@@ -71,7 +75,7 @@ const UserControls: React.FC<UserControlsProps> = ({
           onClick={handleHomeClick}
           className="bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600 transition duration-300"
         >
-          {t("Home")}
+          {t("Home", { defaultValue: "Home" })}
         </button>
         <button
           onClick={handleToggleDarkMode}
@@ -81,7 +85,9 @@ const UserControls: React.FC<UserControlsProps> = ({
               : "bg-black text-white hover:bg-gray-800"
           }`}
         >
-          {darkMode ? t("Light Mode") : t("Dark Mode")}
+          {darkMode
+            ? t("Light Mode", { defaultValue: "Light Mode" })
+            : t("Dark Mode", { defaultValue: "Dark Mode" })}
         </button>
       </div>
       <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
@@ -94,7 +100,17 @@ const UserControls: React.FC<UserControlsProps> = ({
             }`}
           >
             <div className="flex items-center space-x-2">
-              <span>{t("Market Cap Change (24h):")}</span>
+              <span>{t("Coins") + ":"}</span>
+              <span className="text-blue-400">
+                {marketData.activeCryptocurrencies}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span>{t("Exchanges") + ":"}</span>
+              <span className="text-yellow-500">{marketData.markets}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span>{t("Market Cap Change (24h)") + ":"}</span>
               <span
                 className={`${
                   marketData.marketCapChange >= 0
@@ -106,13 +122,13 @@ const UserControls: React.FC<UserControlsProps> = ({
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span>{t("BTC Dominance:")}</span>
+              <span>{t("BTC Dominance") + ":"}</span>
               <span className="text-yellow-500">
                 {marketData.btcDominance.toFixed(2)}%
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span>{t("ETH Dominance:")}</span>
+              <span>{t("ETH Dominance") + ":"}</span>
               <span className="text-blue-400">
                 {marketData.ethDominance.toFixed(2)}%
               </span>
@@ -126,22 +142,24 @@ const UserControls: React.FC<UserControlsProps> = ({
           onChange={handleLanguageChange}
           className="border border-gray-300 p-2 rounded-md text-black shadow focus:outline-none focus:ring-2 focus:ring-purple-500"
         >
-          <option value="en">English</option>
-          <option value="ko">한국어</option>
+          <option value="en">
+            {t("English", { defaultValue: "English" })}
+          </option>
+          <option value="ko">{t("Korean", { defaultValue: "한국어" })}</option>
         </select>
         {user ? (
           <button
             onClick={handleLogout}
             className="bg-red-500 text-white px-4 py-2 rounded-md shadow hover:bg-red-600 transition duration-300"
           >
-            {t("Logout")}
+            {t("Logout", { defaultValue: "Logout" })}
           </button>
         ) : (
           <button
             onClick={handleLogin}
             className="bg-green-500 text-white px-4 py-2 rounded-md shadow hover:bg-green-600 transition duration-300"
           >
-            {t("Login")}
+            {t("Login", { defaultValue: "Login" })}
           </button>
         )}
       </div>

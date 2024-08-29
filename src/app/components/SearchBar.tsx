@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import Link from "next/link";
 
 type SearchBarProps = {
   input: string;
@@ -21,24 +22,44 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col md:flex-row justify-center items-center mb-8">
-      <div className="flex w-full md:w-auto mb-2 md:mb-0 justify-center">
+    <div className="flex items-center justify-between p-4 shadow-md">
+      <div className="flex items-center">
+        <img
+          src="https://cryptologos.cc/logos/bitcoin-btc-logo.png"
+          alt="Logo"
+          className="w-10 h-10 mr-2"
+        />
+        <span className="text-xl font-bold">{t(" Information")}</span>{" "}
+      </div>
+
+      <div className="flex items-center space-x-6 text-gray-700">
+        <Link href="#cryptocurrencies" className="hover:text-blue-500">
+          {t("Coins")}
+        </Link>
+        <Link href="#exchanges" className="hover:text-blue-500">
+          {t("Exchanges")}
+        </Link>
+        <Link href="/nft" className="hover:text-blue-500">
+          NFT{" "}
+        </Link>
+        <Link href="#learn" className="hover:text-blue-500">
+          {t("Learn", { defaultValue: "Learn" })}{" "}
+        </Link>
+        <Link href="#products" className="hover:text-blue-500">
+          {t("Products", { defaultValue: "Products" })}{" "}
+        </Link>
+      </div>
+
+      <div className="flex items-center bg-gray-100 p-2 rounded-lg">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={t("Enter coin ID (e.g., bitcoin)")}
-          className={`border p-3 rounded-l-lg flex-grow ${
-            darkMode
-              ? "bg-gray-800 text-white border-gray-600"
-              : "bg-white text-black border-gray-300"
-          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          placeholder={t("Search")}
+          className="bg-transparent outline-none px-2 w-32 shadow-md"
         />
-        <button
-          onClick={handleSearch}
-          className="bg-blue-500 text-white p-3 rounded-r-lg hover:bg-blue-600 transition duration-300"
-        >
-          {t("Search")}
+        <button onClick={handleSearch} className="text-blue-500 px-2">
+          <i className="fas fa-search"></i>
         </button>
       </div>
     </div>
