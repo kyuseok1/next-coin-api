@@ -91,11 +91,7 @@ const CoinList: React.FC<CoinListProps> = ({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-center">
-        <thead
-          className={
-            darkMode ? "bg-gray-700 text-white" : "bg-gray-100 text-black"
-          }
-        >
+        <thead>
           <tr>
             <th className="py-3 px-6">#</th>
             <th className="py-3 px-6 text-left">{t("Coin")}</th>
@@ -113,11 +109,7 @@ const CoinList: React.FC<CoinListProps> = ({
               <td className="py-3 px-6">{index + 1}</td>
               <td className="py-3 px-6">
                 <Link href={`/coin/${coin.id}`}>
-                  <div
-                    className={`flex items-center space-x-3 ${
-                      darkMode ? "text-white" : "text-black"
-                    }`}
-                  >
+                  <div className={`flex items-center space-x-3 `}>
                     <img
                       src={coin.image?.thumb}
                       alt={coin.name}

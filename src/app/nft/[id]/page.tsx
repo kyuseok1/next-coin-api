@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchNftById } from "../../../lib/coinApi";
 import UserControls from "../../components/UserControls";
+
 type NFT = {
   id: string;
   name: string;
@@ -12,20 +13,41 @@ type NFT = {
     small: string;
     large: string;
   };
+  contract_address: string;
+  asset_platform_id: string;
+  market_cap: {
+    native_currency: number;
+    usd: number;
+  };
+  ath: {
+    native_currency: number;
+    usd: number;
+  };
+  floor_price: {
+    native_currency: number;
+    usd: number;
+  };
+  total_supply: number;
+  number_of_unique_addresses: number;
+  links: {
+    homepage: string;
+    twitter: string;
+    discord: string;
+  };
 };
 
 const NFTDetailPage: React.FC = () => {
   const { id } = useParams();
-
   const nftId = Array.isArray(id) ? id[0] : id;
-  const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d");
-  const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState("en");
-  const [showFullDescription, setShowFullDescription] = useState(false);
-  const user = { name: "" };
+
   const [nft, setNft] = useState<NFT | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d");
+  const [darkMode, setDarkMode] = useState(false);
+  const [language, setLanguage] = useState("en");
+  const user = { name: "" };
 
   useEffect(() => {
     const fetchNFT = async () => {
@@ -37,8 +59,10 @@ const NFTDetailPage: React.FC = () => {
 
       try {
         const data = await fetchNftById(nftId);
+        console.log("Fetched NFT Data:", data);
         setNft(data);
       } catch (err) {
+        console.error("Error fetching NFT data:", err);
         setError("Failed to load NFT data.");
       } finally {
         setIsLoading(false);
@@ -52,19 +76,89 @@ const NFTDetailPage: React.FC = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div className="p-8">
-      <UserControls
-        handleLogin={() => console.log("Login")}
-        handleLogout={() => console.log("Logout")}
-        {...{ darkMode, setDarkMode, language, setLanguage, user }}
-      />
-      <h1 className="text-3xl font-bold mb-6">NFT Details</h1>
+    <div
+      className={`min-h-screen 
+       p-8`}
+    >
+      <h1 className="text-4xl font-bold mb-6">NFT Details</h1>
       {nft && (
         <>
-          <img src={nft.image.large} alt={nft.name} className="mb-4" />
-          <p className="mb-4">NFT Name: {nft.name}</p>
-          <p className="mb-4">Symbol: {nft.symbol}</p>
-          <p className="mb-4">Description: {nft.description}</p>
+          <img
+            src={nft.image.large || nft.image.small}
+            onError={(e) => {
+              e.currentTarget.src = "/default-image.png";
+            }}
+            alt={nft.name}
+            className="mb-4 w-64 h-64 object-cover rounded-lg shadow-md"
+          />
+          <p className="mb-4">
+            <strong>NFT Name:</strong> {nft.name}
+          </p>
+          <p className="mb-4">
+            <strong>Symbol:</strong> {nft.symbol}
+          </p>
+          <p className="mb-4">
+            <strong>Description:</strong> {nft.description}
+          </p>
+          <p className="mb-4">
+            <strong>Contract Address:</strong> {nft.contract_address}
+          </p>
+          <p className="mb-4">
+            <strong>Asset Platform:</strong> {nft.asset_platform_id}
+          </p>
+          <p className="mb-4">
+            <strong>Market Cap:</strong> {nft.market_cap.native_currency} ETH /
+            ${nft.market_cap.usd}
+          </p>
+          <p className="mb-4">
+            <strong>All-Time High:</strong> {nft.ath.native_currency} ETH / $
+            {nft.ath.usd}
+          </p>
+          <p className="mb-4">
+            <strong>Floor Price:</strong> {nft.floor_price.native_currency} ETH
+            / ${nft.floor_price.usd}
+          </p>
+          <p className="mb-4">
+            <strong>Total Supply:</strong> {nft.total_supply}
+          </p>
+          <p className="mb-4">
+            <strong>Unique Addresses:</strong> {nft.number_of_unique_addresses}
+          </p>
+          <div className="mb-4">
+            <strong>Links:</strong>
+            <ul>
+              <li>
+                <a
+                  href={nft.links.homepage}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  Homepage
+                </a>
+              </li>
+              <li>
+                <a
+                  href={nft.links.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  Twitter
+                </a>
+              </li>
+              <li>
+                <a
+                  href={nft.links.discord}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  Discord
+                </a>
+              </li>
+            </ul>
+          </div>
         </>
       )}
     </div>

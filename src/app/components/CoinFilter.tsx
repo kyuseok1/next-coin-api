@@ -30,7 +30,7 @@ const CoinFilter: React.FC<CoinFilterProps> = ({
         <select
           onChange={handleFilterTypeChange}
           value={filterType}
-          className={`border p-2 rounded-lg w-1/2 md:w-1/5 text-center ${
+          className={`border p-2 rounded-lg  text-center ${
             darkMode
               ? "bg-gray-800 text-white border-gray-600"
               : "bg-white text-black border-gray-300"

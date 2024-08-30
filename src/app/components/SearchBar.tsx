@@ -8,21 +8,17 @@ type SearchBarProps = {
   handleSearch: () => void;
   handleSetAlert: () => void;
   handleClearAlerts: () => void;
-  darkMode: boolean;
 };
 
 const SearchBar: React.FC<SearchBarProps> = ({
   input,
   setInput,
   handleSearch,
-  handleSetAlert,
-  handleClearAlerts,
-  darkMode,
 }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center justify-between p-4 shadow-md">
+    <div className="flex items-center justify-between p-4 border border-gray-100">
       <div className="flex items-center">
         <img
           src="https://cryptologos.cc/logos/bitcoin-btc-logo.png"
@@ -33,30 +29,45 @@ const SearchBar: React.FC<SearchBarProps> = ({
       </div>
 
       <div className="flex items-center space-x-6 text-gray-700">
-        <Link href="#cryptocurrencies" className="hover:text-blue-500">
+        <Link
+          href="#cryptocurrencies"
+          className="hover:text-blue-500 hover:underline hover:scale-110 transform transition duration-300 ease-in-out"
+        >
           {t("Coins")}
         </Link>
-        <Link href="#exchanges" className="hover:text-blue-500">
+        <Link
+          href="#exchanges"
+          className="hover:text-blue-500 hover:underline hover:scale-110 transform transition duration-300 ease-in-out"
+        >
           {t("Exchanges")}
         </Link>
-        <Link href="/nft" className="hover:text-blue-500">
+        <Link
+          href="/nft"
+          className="hover:text-blue-500 hover:underline hover:scale-110 transform transition duration-300 ease-in-out"
+        >
           NFT{" "}
         </Link>
-        <Link href="#learn" className="hover:text-blue-500">
+        <Link
+          href="#learn"
+          className="hover:text-blue-500 hover:underline hover:scale-110 transform transition duration-300 ease-in-out"
+        >
           {t("Learn", { defaultValue: "Learn" })}{" "}
         </Link>
-        <Link href="#products" className="hover:text-blue-500">
+        <Link
+          href="#products"
+          className="hover:text-blue-500 hover:underline hover:scale-110 transform transition duration-300 ease-in-out"
+        >
           {t("Products", { defaultValue: "Products" })}{" "}
         </Link>
       </div>
 
-      <div className="flex items-center bg-gray-100 p-2 rounded-lg">
+      <div className="flex items-center bg-gray-200 p-2 rounded-lg">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={t("Search")}
-          className="bg-transparent outline-none px-2 w-32 shadow-md"
+          className="bg-transparent outline-none px-2 w-32 "
         />
         <button onClick={handleSearch} className="text-blue-500 px-2">
           <i className="fas fa-search"></i>

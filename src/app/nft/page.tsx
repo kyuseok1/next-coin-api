@@ -25,10 +25,11 @@ const NFTPage: React.FC = () => {
     const fetchNFTs = async () => {
       try {
         const data = await nftList();
+        console.log("Fetched NFT List:", data); // 데이터를 콘솔에 출력
         setNfts(data);
       } catch (error) {
         setError("Failed to fetch NFT data.");
-        console.error(error);
+        console.error("Error fetching NFT data:", error); // 오류가 발생한 경우 콘솔에 오류를 출력
       } finally {
         setIsLoading(false);
       }
@@ -47,11 +48,6 @@ const NFTPage: React.FC = () => {
 
   return (
     <div className="p-8">
-      <UserControls
-        handleLogin={() => console.log("Login")}
-        handleLogout={() => console.log("Logout")}
-        {...{ darkMode, setDarkMode, language, setLanguage, user }}
-      />
       <h1 className="text-3xl font-bold mb-6">NFT Page</h1>
       <p className="mb-4">Here are some NFTs:</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
