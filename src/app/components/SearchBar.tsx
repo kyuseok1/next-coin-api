@@ -30,7 +30,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       <div className="flex items-center space-x-6 text-gray-700">
         <Link
-          href="#cryptocurrencies"
+          href="#coin"
           className="hover:text-blue-500 hover:underline hover:scale-110 transform transition duration-300 ease-in-out"
         >
           {t("Coins")}
@@ -61,16 +61,19 @@ const SearchBar: React.FC<SearchBarProps> = ({
         </Link>
       </div>
 
-      <div className="flex items-center bg-gray-200 p-2 rounded-lg">
+      <div className="flex items-center bg-white shadow-md rounded-lg overflow-hidden max-w-sm">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={t("Search")}
-          className="bg-transparent outline-none px-2 w-32 "
+          className="bg-transparent outline-none px-4 py-2 w-full text-gray-700"
         />
-        <button onClick={handleSearch} className="text-blue-500 px-2">
-          <i className="fas fa-search"></i>
+        <button
+          onClick={handleSearch}
+          className="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors duration-300 ease-in-out"
+        >
+          {t("Search")}
         </button>
       </div>
     </div>

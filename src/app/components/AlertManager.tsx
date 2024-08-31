@@ -14,18 +14,18 @@ type AlertManagerProps = {
   handleDeleteAlert: (index: number) => void;
   setFilterAlerts: (value: string) => void;
   handleUpdateAlertPrice: (index: number, newPrice: number) => void;
-  handleAddAlert: (id: string, price: number) => void; // 새로운 알림 추가 함수
+  handleAddAlert: (id: string, price: number) => void;
 };
 
 const AlertManager: React.FC<AlertManagerProps> = ({
   alerts,
   coins,
-  darkMode,
+
   filterAlerts,
   handleDeleteAlert,
   setFilterAlerts,
   handleUpdateAlertPrice,
-  handleAddAlert, // 새로운 알림 추가 함수
+  handleAddAlert,
 }) => {
   const { t } = useTranslation();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -57,28 +57,29 @@ const AlertManager: React.FC<AlertManagerProps> = ({
       handleAddAlert(newAlertId, Number(newAlertPrice));
       setNewAlertId("");
       setNewAlertPrice("");
-      setShowAddAlert(false); // 추가 후 입력 필드 숨기기
+      setShowAddAlert(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center mb-4">
-      <h2 className="text-2xl font-bold mb-2">{t("Price Alerts")}</h2>
+    <div className="flex flex-col items-center mb-6">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800 ">
+        {t("Price Alerts")}
+      </h2>
 
-      {/* 알림 추가 버튼 */}
       <button
         onClick={() => setShowAddAlert(!showAddAlert)}
-        className="bg-blue-500 text-white p-2 rounded-md mb-4"
+        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg mb-4 shadow-md transition duration-300 ease-in-out"
       >
         {showAddAlert ? t("Cancel") : t("Add New Alert")}
       </button>
 
       {showAddAlert && (
-        <div className="flex flex-col items-center mb-4">
+        <div className="flex flex-col items-center w-full max-w-sm bg-white  p-4 rounded-lg shadow-lg mb-4">
           <select
             value={newAlertId}
             onChange={(e) => setNewAlertId(e.target.value)}
-            className="border p-2 rounded-md mb-2"
+            className="w-full border p-2 rounded-lg mb-2 "
           >
             <option value="">{t("Select Coin")}</option>
             {coins.map((coin) => (
@@ -92,32 +93,35 @@ const AlertManager: React.FC<AlertManagerProps> = ({
             placeholder={t("Enter Alert Price")}
             value={newAlertPrice}
             onChange={(e) => setNewAlertPrice(e.target.value)}
-            className="border p-2 rounded-md mb-2"
+            className="w-full border p-2 rounded-lg mb-4 "
           />
           <button
             onClick={handleAddAlertClick}
-            className="bg-green-500 text-white p-2 rounded-md"
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out w-full"
           >
             {t("Add Alert")}
           </button>
         </div>
       )}
 
-      <ul className="w-full max-w-md">
+      <ul className="w-full max-w-md  p-4 rounded-lg shadow-lg">
         {filteredAlerts.length === 0 ? (
-          <li className="text-center">{t("No alerts found.")}</li>
+          <li className="text-center ">{t("No alerts found.")}</li>
         ) : (
           filteredAlerts.map((alert, index) => (
-            <li key={index} className="flex justify-between items-center mb-2">
+            <li
+              key={index}
+              className="flex justify-between items-center mb-4 p-3 rounded-lg bg-gray-100 "
+            >
               {editingIndex === index ? (
                 <input
                   type="number"
                   value={newPrice}
                   onChange={(e) => setNewPrice(e.target.value)}
-                  className="border p-2 rounded-md mr-2"
+                  className="border p-2 rounded-lg mr-2 "
                 />
               ) : (
-                <span>
+                <span className="text-gray-800 ">
                   {alert.id === "global"
                     ? `${t("Global alert for")} $${alert.price}`
                     : `${t("Alert for")} ${alert.id} ${t("at")} $${
@@ -129,21 +133,21 @@ const AlertManager: React.FC<AlertManagerProps> = ({
                 {editingIndex === index ? (
                   <button
                     onClick={() => handleSaveClick(index)}
-                    className="bg-green-500 text-white p-2 rounded-md"
+                    className="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-3 rounded-lg shadow-md transition duration-300 ease-in-out"
                   >
                     {t("Save")}
                   </button>
                 ) : (
                   <button
                     onClick={() => handleEditClick(index, alert.price)}
-                    className="bg-blue-500 text-white p-2 rounded-md"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded-lg shadow-md transition duration-300 ease-in-out"
                   >
                     {t("Edit")}
                   </button>
                 )}
                 <button
                   onClick={() => handleDeleteAlert(index)}
-                  className="bg-red-500 text-white p-2 rounded-md"
+                  className="bg-red-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded-lg shadow-md transition duration-300 ease-in-out"
                 >
                   {t("Delete")}
                 </button>
@@ -155,9 +159,7 @@ const AlertManager: React.FC<AlertManagerProps> = ({
       <select
         onChange={(e) => setFilterAlerts(e.target.value)}
         value={filterAlerts}
-        className={`border p-2 rounded-md ${
-          darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-        } mt-2`}
+        className={`w-full max-w-md border p-2 rounded-lg mt-4 dark:bg-gray-700 dark:text-gray-200`}
       >
         <option value="all">{t("All Alerts")}</option>
         {coins.map((coin) => (

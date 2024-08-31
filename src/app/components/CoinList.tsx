@@ -89,9 +89,9 @@ const CoinList: React.FC<CoinListProps> = ({
   );
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto ">
       <table className="min-w-full text-center">
-        <thead>
+        <thead className="id=coin">
           <tr>
             <th className="py-3 px-6">#</th>
             <th className="py-3 px-6 text-left">{t("Coin")}</th>
