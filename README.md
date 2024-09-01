@@ -49,6 +49,13 @@ https://next-coin-api.vercel.app/ <br><br>
 
 <br>
 <br>
+
+
+
+## 🛠️ Features 
+
+<img width="1268" alt="홈페이지" src="https://github.com/user-attachments/assets/9b73e2eb-6f10-4c05-b715-557e8ffa7a90">
+
 ## 1. 다크모드 토글
 - 설명: 더 나은 시청 환경을 위해 밝은 모드와 어두운 모드를 전환합니다.
 - 사용법: "라이트 모드" 또는 "다크 모드"라고 표시된 버튼을 클릭하여 모드를 전환합니다.
