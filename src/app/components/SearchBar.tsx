@@ -36,7 +36,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           {t("Coins")}
         </Link>
         <Link
-          href="#exchanges"
+          href="/exchanges"
           className="hover:text-blue-500 hover:underline hover:scale-110 transform transition duration-300 ease-in-out"
         >
           {t("Exchanges")}
