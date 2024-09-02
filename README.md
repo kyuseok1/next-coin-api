@@ -9,6 +9,10 @@
 ## 🚀 Demo 링크
 https://next-coin-api.vercel.app/ <br><br>
 
+## 🕰️ 제작 기간 
+- **제작 기간**: 2024년 7월 28일 ~ 계속 작업
+
+  <br><br>
 ## 🛠️ 기술 스택
 
 ![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=white)
@@ -18,32 +22,39 @@ https://next-coin-api.vercel.app/ <br><br>
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
 ![i18next](https://img.shields.io/badge/i18next-26A69A?style=for-the-badge&logo=i18next&logoColor=white)
-
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
 <br><br>
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+## 📈 Dependency  Version
 
-First, run the development server:
+| Dependency                | Version  |
+| ------------------------- | -------- |
+| axios                     | ^1.7.2   |
+| chart.js                  | ^4.4.3   |
+| express                   | ^4.19.2  |
+| i18next                   | ^23.12.2 |
+| next                      | 14.2.5   |
+| next-i18next              | ^15.3.1  |
+| react                     | ^18      |
+| @types/node              | ^20      |
+| @types/react             | ^18      |
+| @types/react-dom         | ^18      |
+| @types/ws                | ^8.5.12  |
+| autoprefixer             | ^10.4.19 |
+| postcss                  | ^8.4.40  |
+| tailwindcss              | ^3.4.7   |
+| typescript               | ^5       |
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+<br>
+<br>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-# Features
+## 🛠️ Features 
+
+<img width="1268" alt="홈페이지" src="https://github.com/user-attachments/assets/9b73e2eb-6f10-4c05-b715-557e8ffa7a90">
 
 ## 1. 다크모드 토글
 - 설명: 더 나은 시청 환경을 위해 밝은 모드와 어두운 모드를 전환합니다.
