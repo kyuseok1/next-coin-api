@@ -187,3 +187,37 @@ export const fetchNftById = async (id: string) => {
     throw error;
   }
 };
+export const fetchCryptoNews = async () => {
+  const cacheKey = "cryptoNews";
+
+  // 캐시된 데이터가 있으면 반환
+  if (cache[cacheKey]) {
+    return cache[cacheKey];
+  }
+
+  try {
+    const response = await axios.get(`${COINGECKO_API_URL}/news`);
+
+    // API 응답 데이터 처리
+    if (Array.isArray(response.data.data)) {
+      const articles = response.data.data.map((article: any) => ({
+        title: article.title,
+        url: article.url,
+        description: article.description,
+        author: article.author || "Unknown",
+        updated_at: new Date(article.updated_at * 1000).toLocaleString(),
+        news_site: article.news_site,
+        thumb_2x: article.thumb_2x || null,
+      }));
+
+      cache[cacheKey] = articles; // 캐시 저장
+      return articles;
+    } else {
+      console.error("Unexpected API response format:", response.data);
+      throw new Error("Unexpected data structure received from API");
+    }
+  } catch (error) {
+    console.error("Error fetching crypto news:", error);
+    throw error;
+  }
+};

@@ -149,11 +149,6 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
         darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"
       } p-6`}
     >
-      <UserControls
-        handleLogin={() => console.log("Login")}
-        handleLogout={() => console.log("Logout")}
-        {...{ darkMode, setDarkMode, language, setLanguage, user }}
-      />
       <div
         className={`max-w-4xl mx-auto ${
           darkMode ? "bg-gray-800" : "bg-white"

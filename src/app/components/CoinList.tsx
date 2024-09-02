@@ -14,7 +14,11 @@ type CoinListProps = {
   filterText: string;
   filterType: string;
   priceRange: [number, number];
-  sortBy: string;
+};
+
+type SortBy = {
+  key: "price" | "24h" | "market_cap";
+  order: "asc" | "desc";
 };
 
 const CoinList: React.FC<CoinListProps> = ({
@@ -26,10 +30,10 @@ const CoinList: React.FC<CoinListProps> = ({
   filterText,
   filterType,
   priceRange,
-  sortBy,
 }) => {
   const { t } = useTranslation();
   const [trendingCoins, setTrendingCoins] = useState<Coin[]>([]);
+  const [sortBy, setSortBy] = useState<SortBy>({ key: "price", order: "desc" });
 
   useEffect(() => {
     if (filterType === "trending") {
@@ -44,6 +48,14 @@ const CoinList: React.FC<CoinListProps> = ({
       setTrendingCoins([]);
     }
   }, [filterType]);
+
+  const handleSort = (key: "price" | "24h" | "market_cap") => {
+    setSortBy((prevSortBy) => ({
+      key,
+      order:
+        prevSortBy.key === key && prevSortBy.order === "asc" ? "desc" : "asc",
+    }));
+  };
 
   const filteredAndSortedCoins = useMemo(() => {
     const coinArray: Coin[] = [...coins, ...trendingCoins].filter(
@@ -65,16 +77,24 @@ const CoinList: React.FC<CoinListProps> = ({
     });
 
     return filteredCoins.sort((a, b) => {
-      if (sortBy === "market_cap") {
-        return (
-          (b.market_data?.market_cap?.usd ?? -1) -
-          (a.market_data?.market_cap?.usd ?? -1)
-        );
-      } else if (sortBy === "price") {
-        return (
-          (b.market_data?.current_price?.usd ?? -1) -
-          (a.market_data?.current_price?.usd ?? -1)
-        );
+      if (sortBy.key === "price") {
+        return sortBy.order === "asc"
+          ? (a.market_data?.current_price?.usd ?? -1) -
+              (b.market_data?.current_price?.usd ?? -1)
+          : (b.market_data?.current_price?.usd ?? -1) -
+              (a.market_data?.current_price?.usd ?? -1);
+      } else if (sortBy.key === "24h") {
+        return sortBy.order === "asc"
+          ? (a.market_data?.price_change_percentage_24h ?? -1) -
+              (b.market_data?.price_change_percentage_24h ?? -1)
+          : (b.market_data?.price_change_percentage_24h ?? -1) -
+              (a.market_data?.price_change_percentage_24h ?? -1);
+      } else if (sortBy.key === "market_cap") {
+        return sortBy.order === "asc"
+          ? (a.market_data?.market_cap?.usd ?? -1) -
+              (b.market_data?.market_cap?.usd ?? -1)
+          : (b.market_data?.market_cap?.usd ?? -1) -
+              (a.market_data?.market_cap?.usd ?? -1);
       }
       return 0;
     });
@@ -89,15 +109,49 @@ const CoinList: React.FC<CoinListProps> = ({
   );
 
   return (
-    <div className="overflow-x-auto ">
+    <div className="overflow-x-auto">
       <table className="min-w-full text-center">
-        <thead className="id=coin">
+        <thead className="">
           <tr>
-            <th className="py-3 px-6">#</th>
-            <th className="py-3 px-6 text-left">{t("Coin")}</th>
-            <th className="py-3 px-6">{t("Price")}</th>
-            <th className="py-3 px-6">24h</th>
-            <th className="py-3 px-6">{t("Market Cap")}</th>
+            <th className="py-3 px-6 text-sm font-semibold ">#</th>
+            <th className="py-3 px-6 text-sm font-semibold  text-left">
+              {t("Coin")}
+            </th>
+            <th className="py-3 px-6 text-sm font-semibold ">
+              <div className="flex items-center justify-center space-x-1">
+                <span>{t("Price")}</span>
+                <button
+                  onClick={() => handleSort("price")}
+                  className="p-1 rounded  text-black hover:bg-blue-600 transition duration-300"
+                >
+                  {sortBy.key === "price" && sortBy.order === "asc" ? "▲" : "▼"}
+                </button>
+              </div>
+            </th>
+            <th className="py-3 px-6 text-sm font-semibold ">
+              <div className="flex items-center justify-center space-x-1">
+                <span>24h</span>
+                <button
+                  onClick={() => handleSort("24h")}
+                  className="p-1 rounded text-black hover:bg-blue-600 transition duration-300"
+                >
+                  {sortBy.key === "24h" && sortBy.order === "asc" ? "▲" : "▼"}
+                </button>
+              </div>
+            </th>
+            <th className="py-3 px-6 text-sm font-semibold ">
+              <div className="flex items-center justify-center space-x-1">
+                <span>{t("Market Cap")}</span>
+                <button
+                  onClick={() => handleSort("market_cap")}
+                  className="p-1 rounded text-black hover:bg-blue-600 transition duration-300"
+                >
+                  {sortBy.key === "market_cap" && sortBy.order === "asc"
+                    ? "▲"
+                    : "▼"}
+                </button>
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody>

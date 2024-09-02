@@ -156,18 +156,6 @@ const AlertManager: React.FC<AlertManagerProps> = ({
           ))
         )}
       </ul>
-      <select
-        onChange={(e) => setFilterAlerts(e.target.value)}
-        value={filterAlerts}
-        className={`w-full max-w-md border p-2 rounded-lg mt-4 dark:bg-gray-700 dark:text-gray-200`}
-      >
-        <option value="all">{t("All Alerts")}</option>
-        {coins.map((coin) => (
-          <option key={coin.id} value={coin.id}>
-            {coin.name}
-          </option>
-        ))}
-      </select>
     </div>
   );
 };

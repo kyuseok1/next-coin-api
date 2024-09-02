@@ -55,9 +55,6 @@ const Home = () => {
 
   useEffect(() => {
     fetchCoinsData();
-    const intervalId = setInterval(fetchCoinsData, 60000);
-
-    return () => clearInterval(intervalId);
   }, [fetchCoinsData]);
 
   const handleSearch = useCallback(async () => {

@@ -8,6 +8,8 @@ type NFT = {
   id: string;
   name: string;
   symbol: string;
+  asset_platform_id: string;
+  contract_address: string;
 };
 
 const NFTPage: React.FC = () => {
@@ -25,11 +27,11 @@ const NFTPage: React.FC = () => {
     const fetchNFTs = async () => {
       try {
         const data = await nftList();
-        console.log("Fetched NFT List:", data); // 데이터를 콘솔에 출력
+        console.log("Fetched NFT List:", data);
         setNfts(data);
       } catch (error) {
         setError("Failed to fetch NFT data.");
-        console.error("Error fetching NFT data:", error); // 오류가 발생한 경우 콘솔에 오류를 출력
+        console.error("Error fetching NFT data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -56,6 +58,8 @@ const NFTPage: React.FC = () => {
             <div className="p-4 border rounded shadow-md cursor-pointer hover:shadow-lg transition-shadow duration-200">
               <h2 className="text-xl font-semibold">{nft.name}</h2>
               <p className="text-gray-500">{nft.symbol}</p>
+              <p className="text-gray-500">Platform: {nft.asset_platform_id}</p>
+              <p className="text-gray-500">Contract: {nft.contract_address}</p>
             </div>
           </Link>
         ))}
