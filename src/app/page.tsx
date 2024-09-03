@@ -1,4 +1,5 @@
 "use client";
+import { Parallax } from "react-parallax";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import AlertManager from "./components/AlertManager";
@@ -20,8 +21,8 @@ const Home = () => {
 
   const [coins, setCoins] = useState<Coin[]>([]);
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(true); // 초기 로딩 상태를 true로 설정
-  const [sortBy, setSortBy] = useState("market_cap");
+  const [isLoading, setIsLoading] = useState(true);
+
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [page, setPage] = useState(1);
@@ -168,7 +169,6 @@ const Home = () => {
           filterText,
           filterType,
           priceRange,
-          sortBy,
         }}
       />
       <div className="flex justify-center mt-8"></div>
@@ -181,7 +181,49 @@ const Home = () => {
         darkMode ? "bg-gray-900 text-white" : " "
       }  pr-4 pb-4 pl-4`}
     >
-      <div className="rounded-lg shadow-md mb-8 border-b border-gray-300 pb-4 ">
+      <div>
+        <Parallax
+          className="parallax"
+          bgImage="/images/home4.jpg"
+          strength={700} // 강도 조절
+        >
+          <div className="relative">
+            <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+                {t("코인의 모든것")}
+              </h1>
+              <p className="text-lg md:text-2xl text-gray-300 leading-relaxed">
+                {t("커뮤니티에서 쉽고 간편하게")}
+              </p>
+            </section>
+
+            <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+                {t("코인 정보를 한곳에서 보고 ")}
+              </h1>
+              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+                {t("한 곳에서 관리하세요.")}
+              </h1>
+              <h1 className="text-lg md:text-2xl text-gray-300 leading-relaxed">
+                {t("이제껏 경험 못했던 편리한 서비스")}
+              </h1>
+              <h1 className="text-lg md:text-2xl text-gray-300 leading-relaxed">
+                {t("커뮤니티와 함께라면 새로워질 거에요.")}
+              </h1>
+            </section>
+
+            <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
+              <p className="text-xl md:text-2xl text-gray-100 leading-relaxed">
+                {t("찾으시는 정보가 있으신가요?")}
+              </p>
+              <p className="text-xl md:text-2xl text-gray-100 leading-relaxed">
+                {t("누구나 쉽게 찾을수 있답니다.")}
+              </p>
+            </section>
+          </div>
+        </Parallax>
+      </div>
+      <div className="min-h-screen rounded-lg shadow-md mb-8 border-b border-gray-300 pb-4 ">
         <SearchBar
           {...{
             input,
@@ -198,17 +240,6 @@ const Home = () => {
           </div>
 
           <div className="flex-[1] flex flex-col items-center">
-            <select
-              onChange={(e) => setSortBy(e.target.value)}
-              value={sortBy}
-              className={`border p-2 rounded-md ${
-                darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-              }`}
-            >
-              <option value="market_cap">{t("Sort by Market Cap")}</option>
-              <option value="price">{t("Sort by Price")}</option>
-            </select>
-
             <CoinFilter
               {...{
                 filterText,
@@ -231,24 +262,6 @@ const Home = () => {
               handleUpdateAlertPrice={handleUpdateAlertPrice}
               handleAddAlert={handleAddAlert}
             />
-
-            <div className="flex">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("Enter your email")}
-                className={`border p-2 rounded-md ${
-                  darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-                }`}
-              />
-              <button
-                onClick={handleSubscribeAlerts}
-                className="bg-blue-500 text-white p-2 rounded-md ml-2"
-              >
-                {t("Subscribe to Alerts")}
-              </button>
-            </div>
           </div>
 
           {recentSearches.length > 0 && (
@@ -274,6 +287,7 @@ const Home = () => {
             </div>
           )}
         </div>
+
         <FavoriteCoins
           {...{
             coins,

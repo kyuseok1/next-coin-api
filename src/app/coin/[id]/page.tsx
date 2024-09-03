@@ -25,7 +25,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
   >(null);
   const [isLoading, setIsLoading] = useState(true); // 초기 로딩 상태를 true로 설정
   const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d");
-  const [darkMode, setDarkMode] = useState(false);
+
   const [language, setLanguage] = useState("en");
   const [showFullDescription, setShowFullDescription] = useState(false);
   const user = { name: "" };
@@ -144,16 +144,8 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
   );
 
   return (
-    <div
-      className={`min-h-screen ${
-        darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"
-      } p-6`}
-    >
-      <div
-        className={`max-w-4xl mx-auto ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        } p-8 rounded-lg shadow-lg mt-4`}
-      >
+    <div className={`min-h-screen  p-6`}>
+      <div className={`max-w-4xl mx-auto p-8 rounded-lg shadow-lg mt-4`}>
         {isLoading ? (
           <div className="flex justify-center items-center min-h-screen">
             <div className="text-2xl">Loading...</div>
@@ -169,25 +161,9 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
                 />
               )}
               <div className="text-center">
-                <h1
-                  className={`text-base font-bold ${
-                    darkMode ? "text-white" : "text-gray-800"
-                  } mb-1`}
-                >
-                  {coin.name}
-                </h1>
-                <p
-                  className={`text-lg ${
-                    darkMode ? "text-gray-300" : "text-gray-500"
-                  } mb-2`}
-                >
-                  {coin.symbol.toUpperCase()}
-                </p>
-                <p
-                  className={`text-xl font-semibold ${
-                    darkMode ? "text-gray-100" : "text-gray-900"
-                  }`}
-                >
+                <h1 className={`text-base font-bold  mb-1`}>{coin.name}</h1>
+                <p className={`text-lg  mb-2`}>{coin.symbol.toUpperCase()}</p>
+                <p className={`text-xl font-semibold`}>
                   ${coin.market_data?.current_price?.usd?.toFixed(2)}
                 </p>
                 {coin.market_data?.price_change_percentage_24h !==
@@ -207,11 +183,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 text-sm gap-6">
-              <div
-                className={`p-4 rounded-lg shadow-md ${
-                  darkMode ? "bg-gray-700" : "bg-gray-50"
-                }`}
-              >
+              <div className={`p-4 rounded-lg shadow-md `}>
                 <h2 className="text-2xl font-bold mb-4">Details</h2>
                 {renderDetail(
                   "Market Cap Rank",
@@ -229,19 +201,11 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
                   coin.additional?.developer_data.total_issues
                 )}
               </div>
-              <div
-                className={`p-4 rounded-lg shadow-md ${
-                  darkMode ? "bg-gray-700" : "bg-gray-50"
-                }`}
-              >
+              <div className={`p-4 rounded-lg shadow-md`}>
                 <h2 className="text-2xl font-bold mb-4">Description</h2>
                 <p className="text-gray-700">{renderDescription()}</p>
               </div>
-              <div
-                className={`p-4 rounded-lg shadow-md ${
-                  darkMode ? "bg-gray-700" : "bg-gray-50"
-                }`}
-              >
+              <div className={`p-4 rounded-lg shadow-md`}>
                 <h2 className="text-2xl font-bold mb-4">Links</h2>
                 {coin.additional && (
                   <>
