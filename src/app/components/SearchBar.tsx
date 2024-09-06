@@ -7,7 +7,6 @@ type SearchBarProps = {
   setInput: (value: string) => void;
   handleSearch: () => void;
   handleSetAlert: () => void;
-  handleClearAlerts: () => void;
 };
 
 const SearchBar: React.FC<SearchBarProps> = ({

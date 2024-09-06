@@ -13,7 +13,6 @@ import { useTranslation } from "react-i18next";
 import { fetchCoins, fetchCoinById } from "../lib/coinApi";
 
 type Alert = { id: string; price: number };
-type NewsArticle = { title: string; url: string };
 
 const Home = () => {
   const { t } = useTranslation();
@@ -22,31 +21,25 @@ const Home = () => {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
+  const [page] = useState(1);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [filterAlerts, setFilterAlerts] = useState<string>("all");
-  const [darkMode, setDarkMode] = useState(false);
+  const [filterAlerts] = useState<string>("all");
+  const [darkMode] = useState(false);
   const [filterText, setFilterText] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [error, setError] = useState<string | null>(null);
-  const [language, setLanguage] = useState("en");
-  const [chartPeriod, setChartPeriod] = useState("1d");
-  const [user, setUser] = useState<{ name: string } | null>(null);
-  const [email, setEmail] = useState("");
+  const [chartPeriod] = useState("1d");
 
   const fetchCoinsData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const data = await fetchCoins(filterType, page);
-      console.log("Fetched coins:", data);
       setCoins([...data]);
     } catch (error) {
-      console.error("Error fetching coins data:", error);
       setError(t("Failed to fetch coin data. Please try again."));
     } finally {
       setIsLoading(false);
@@ -67,7 +60,6 @@ const Home = () => {
         Array.from(new Set([input, ...prev])).slice(0, 5)
       );
     } catch (error) {
-      console.error("Error fetching coin data:", error);
       setError(t("Failed to fetch coin data. Please try again."));
     } finally {
       setIsLoading(false);
@@ -117,32 +109,11 @@ const Home = () => {
     };
 
     checkPriceAlerts();
-  }, [coins, t]);
+  }, [alerts, coins, t]);
 
-  const handleUpdateAlertPrice = (index: number, newPrice: number) => {
-    setAlerts((prev) =>
-      prev.map((alert, i) =>
-        i === index ? { ...alert, price: newPrice } : alert
-      )
-    );
-  };
-  const handleAddAlert = (id: string, price: number) => {
-    const newAlert: Alert = { id, price };
-    setAlerts((prevAlerts) => [...prevAlerts, newAlert]);
-  };
   const handleDeleteAlert = (index: number) => {
     setAlerts((prevAlerts) => prevAlerts.filter((_, i) => i !== index));
   };
-  const handleLogin = useCallback(() => setUser({ name: "User" }), []);
-  const handleLogout = useCallback(() => setUser(null), []);
-
-  const handleSubscribeAlerts = useCallback(
-    () =>
-      email
-        ? alert(`${t("Subscribed to alerts for")} ${email}`)
-        : alert(t("Please enter a valid email address.")),
-    [email, t]
-  );
 
   const loaderComponent = isLoading && (
     <div className="flex justify-center items-center min-h-screen">
@@ -159,12 +130,12 @@ const Home = () => {
   const coinListComponent = !isLoading && !error && (
     <div>
       <CoinList
+        handleSort={function (): void {
+          throw new Error("Function not implemented.");
+        }}
         sortBy={{
           key: "price",
           order: "desc",
-        }}
-        handleSort={function (key: "price" | "24h" | "market_cap"): void {
-          throw new Error("Function not implemented.");
         }}
         {...{
           coins,
@@ -177,7 +148,6 @@ const Home = () => {
           priceRange,
         }}
       />
-      <div className="flex justify-center mt-8"></div>
     </div>
   );
 
@@ -187,48 +157,19 @@ const Home = () => {
         darkMode ? "bg-gray-900 text-white" : " "
       }  pr-4 pb-4 pl-4`}
     >
-      <div>
-        <Parallax
-          className="parallax"
-          bgImage="/images/home4.jpg"
-          strength={700} // 강도 조절
-        >
-          <div className="relative">
-            <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-                {t("코인의 모든것")}
-              </h1>
-              <p className="text-lg md:text-2xl text-gray-300 leading-relaxed">
-                {t("커뮤니티에서 쉽고 간편하게")}
-              </p>
-            </section>
+      <Parallax className="parallax" bgImage="/images/home4.jpg" strength={700}>
+        <div className="relative">
+          <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+              {t("코인의 모든것")}
+            </h1>
+            <p className="text-lg md:text-2xl text-gray-300 leading-relaxed">
+              {t("커뮤니티에서 쉽고 간편하게")}
+            </p>
+          </section>
+        </div>
+      </Parallax>
 
-            <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-                {t("코인 정보를 한곳에서 보고 ")}
-              </h1>
-              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-                {t("한 곳에서 관리하세요.")}
-              </h1>
-              <h1 className="text-lg md:text-2xl text-gray-300 leading-relaxed">
-                {t("이제껏 경험 못했던 편리한 서비스")}
-              </h1>
-              <h1 className="text-lg md:text-2xl text-gray-300 leading-relaxed">
-                {t("커뮤니티와 함께라면 새로워질 거에요.")}
-              </h1>
-            </section>
-
-            <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
-              <p className="text-xl md:text-2xl text-gray-100 leading-relaxed">
-                {t("찾으시는 정보가 있으신가요?")}
-              </p>
-              <p className="text-xl md:text-2xl text-gray-100 leading-relaxed">
-                {t("누구나 쉽게 찾을수 있답니다.")}
-              </p>
-            </section>
-          </div>
-        </Parallax>
-      </div>
       <div className="min-h-screen rounded-lg shadow-md mb-8 border-b border-gray-300 pb-4 ">
         <SearchBar
           {...{
@@ -237,9 +178,9 @@ const Home = () => {
             handleSearch,
             handleSetAlert,
             darkMode,
-            handleClearAlerts: () => setAlerts([]),
           }}
         />
+
         <div className="flex justify-center mt-4">
           <div className="flex-[2]">
             <NewsSection />
@@ -263,10 +204,16 @@ const Home = () => {
               coins={coins}
               filterAlerts={filterAlerts}
               handleDeleteAlert={handleDeleteAlert}
-              setFilterAlerts={setFilterAlerts}
-              handleUpdateAlertPrice={handleUpdateAlertPrice}
-              handleAddAlert={handleAddAlert}
-            />
+              setFilterAlerts={function (): void {
+                throw new Error("Function not implemented.");
+              }}
+              handleUpdateAlertPrice={function (): void {
+                throw new Error("Function not implemented.");
+              }}
+              handleAddAlert={function (): void {
+                throw new Error("Function not implemented.");
+              }}
+            ></AlertManager>
           </div>
 
           {recentSearches.length > 0 && (
