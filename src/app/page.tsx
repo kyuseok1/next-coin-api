@@ -33,6 +33,15 @@ const Home = () => {
   const [error, setError] = useState<string | null>(null);
   const [chartPeriod] = useState("1d");
 
+  // 정렬 상태 추가
+  const [sortBy, setSortBy] = useState<{
+    key: "price" | "24h" | "market_cap";
+    order: "asc" | "desc";
+  }>({
+    key: "price",
+    order: "desc",
+  });
+
   const fetchCoinsData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -82,6 +91,33 @@ const Home = () => {
     );
   }, []);
 
+  const handleSort = useCallback((key: "price" | "24h" | "market_cap") => {
+    setSortBy((prev) => ({
+      key,
+      order: prev.key === key ? (prev.order === "asc" ? "desc" : "asc") : "asc",
+    }));
+  }, []);
+
+  const sortedCoins = [...coins].sort((a, b) => {
+    const getValue = (coin: Coin) => {
+      switch (sortBy.key) {
+        case "price":
+          return coin.market_data?.current_price?.usd || 0;
+        case "24h":
+          return coin.market_data?.price_change_percentage_24h || 0;
+        case "market_cap":
+          return coin.market_data?.market_cap?.usd || 0;
+        default:
+          return 0;
+      }
+    };
+
+    const valueA = getValue(a);
+    const valueB = getValue(b);
+
+    return sortBy.order === "asc" ? valueA - valueB : valueB - valueA;
+  });
+
   useEffect(() => {
     if (alerts.length === 0 || coins.length === 0) return;
 
@@ -130,15 +166,10 @@ const Home = () => {
   const coinListComponent = !isLoading && !error && (
     <div>
       <CoinList
-        handleSort={function (): void {
-          throw new Error("Function not implemented.");
-        }}
-        sortBy={{
-          key: "price",
-          order: "desc",
-        }}
+        handleSort={handleSort}
+        sortBy={sortBy}
         {...{
-          coins,
+          coins: sortedCoins, // 정렬된 데이터를 전달
           darkMode,
           favorites,
           handleFavorite,
@@ -157,7 +188,11 @@ const Home = () => {
         darkMode ? "bg-gray-900 text-white" : " "
       }  pr-4 pb-4 pl-4`}
     >
-      <Parallax className="parallax" bgImage="/images/home4.jpg" strength={700}>
+      <Parallax
+        className="parallax"
+        bgImage="/images/home4.jpg"
+        strength={700} // 강도 조절
+      >
         <div className="relative">
           <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
             <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
@@ -165,6 +200,30 @@ const Home = () => {
             </h1>
             <p className="text-lg md:text-2xl text-gray-300 leading-relaxed">
               {t("커뮤니티에서 쉽고 간편하게")}
+            </p>
+          </section>
+
+          <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+              {t("코인 정보를 한곳에서 보고 ")}
+            </h1>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+              {t("한 곳에서 관리하세요.")}
+            </h1>
+            <h1 className="text-lg md:text-2xl text-gray-300 leading-relaxed">
+              {t("이제껏 경험 못했던 편리한 서비스")}
+            </h1>
+            <h1 className="text-lg md:text-2xl text-gray-300 leading-relaxed">
+              {t("커뮤니티와 함께라면 새로워질 거에요.")}
+            </h1>
+          </section>
+
+          <section className="flex flex-col justify-center items-center text-center p-12 md:p-24 bg-black bg-opacity-60 h-screen">
+            <p className="text-xl md:text-2xl text-gray-100 leading-relaxed">
+              {t("찾으시는 정보가 있으신가요?")}
+            </p>
+            <p className="text-xl md:text-2xl text-gray-100 leading-relaxed">
+              {t("누구나 쉽게 찾을수 있답니다.")}
             </p>
           </section>
         </div>

@@ -32,11 +32,11 @@ const CoinList: React.FC<CoinListProps> = ({
           <tr>
             <th className="py-3 px-6 text-sm font-semibold">#</th>
             <th className="py-3 px-6 text-sm font-semibold text-left">
-              {t("Coin")}
+              {t("코인")}
             </th>
             <th className="py-3 px-6 text-sm font-semibold">
               <div className="flex items-center justify-center space-x-1">
-                <span>{t("Price")}</span>
+                <span>{t("가격")}</span>
                 <button
                   onClick={() => handleSort("price")}
                   className="p-1 rounded text-black hover:bg-blue-600 transition duration-300"
@@ -58,7 +58,7 @@ const CoinList: React.FC<CoinListProps> = ({
             </th>
             <th className="py-3 px-6 text-sm font-semibold">
               <div className="flex items-center justify-center space-x-1">
-                <span>{t("Market Cap")}</span>
+                <span>{t("시가총액")}</span>
                 <button
                   onClick={() => handleSort("market_cap")}
                   className="p-1 rounded text-black hover:bg-blue-600 transition duration-300"
