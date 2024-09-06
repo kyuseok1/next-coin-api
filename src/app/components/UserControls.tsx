@@ -69,7 +69,11 @@ const UserControls: React.FC<UserControlsProps> = ({
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full flex flex-col md:flex-row justify-between items-center p-4 text-white shadow-md  z-50">
+    <header
+      className={`fixed top-0 left-0 w-full flex flex-col md:flex-row justify-between items-center p-4 text-white shadow-md z-50 ${
+        darkMode ? "bg-black" : "bg-white"
+      }`}
+    >
       <div className="flex items-center space-x-4 mb-4 md:mb-0">
         <button
           onClick={handleHomeClick}
