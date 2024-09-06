@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import { fetchCryptoNews } from "../../lib/coinApi";
 import { useTranslation } from "react-i18next";

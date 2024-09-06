@@ -37,7 +37,6 @@ const Home = () => {
   const [chartPeriod, setChartPeriod] = useState("1d");
   const [user, setUser] = useState<{ name: string } | null>(null);
   const [email, setEmail] = useState("");
-  const [news, setNews] = useState<NewsArticle[]>([]);
 
   const fetchCoinsData = useCallback(async () => {
     setIsLoading(true);
@@ -118,7 +117,7 @@ const Home = () => {
     };
 
     checkPriceAlerts();
-  }, [coins, alerts, t]);
+  }, [coins, t]);
 
   const handleUpdateAlertPrice = (index: number, newPrice: number) => {
     setAlerts((prev) =>
@@ -160,6 +159,13 @@ const Home = () => {
   const coinListComponent = !isLoading && !error && (
     <div>
       <CoinList
+        sortBy={{
+          key: "price",
+          order: "desc",
+        }}
+        handleSort={function (key: "price" | "24h" | "market_cap"): void {
+          throw new Error("Function not implemented.");
+        }}
         {...{
           coins,
           darkMode,
@@ -255,7 +261,6 @@ const Home = () => {
             <AlertManager
               alerts={alerts}
               coins={coins}
-              darkMode={darkMode}
               filterAlerts={filterAlerts}
               handleDeleteAlert={handleDeleteAlert}
               setFilterAlerts={setFilterAlerts}
