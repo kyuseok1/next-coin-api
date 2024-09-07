@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { nftList } from "../../lib/coinApi";
-import UserControls from "../components/UserControls";
 import Link from "next/link";
 
 type NFT = {
@@ -16,12 +15,6 @@ const NFTPage: React.FC = () => {
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d");
-  const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState("en");
-  const [showFullDescription, setShowFullDescription] = useState(false);
-  const user = { name: "" };
 
   useEffect(() => {
     const fetchNFTs = async () => {

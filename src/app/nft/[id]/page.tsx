@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchNftById } from "../../../lib/coinApi";
-import UserControls from "../../components/UserControls";
 
 type NFT = {
   id: string;
@@ -44,9 +43,6 @@ const NFTDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d");
-  const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState("en");
   const user = { name: "" };
 
   useEffect(() => {

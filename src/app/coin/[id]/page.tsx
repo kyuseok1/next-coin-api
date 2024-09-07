@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import CoinChart from "../../../ui/CoinChart";
 import { Coin } from "../../../ui/CoinInfo";
-import UserControls from "../../components/UserControls";
 import { fetchCoinById } from "../../../lib/coinApi";
 
 type Params = { id: string };
@@ -26,7 +25,6 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
   const [isLoading, setIsLoading] = useState(true); // 초기 로딩 상태를 true로 설정
   const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d");
 
-  const [language, setLanguage] = useState("en");
   const [showFullDescription, setShowFullDescription] = useState(false);
   const user = { name: "" };
 
