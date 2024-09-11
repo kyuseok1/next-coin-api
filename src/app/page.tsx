@@ -1,20 +1,36 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import ParallaxSection from "./components/ParallaxSection";
 import MainContent from "./components/MainContent";
 import { Coin } from "../ui/CoinInfo";
 import { useTranslation } from "react-i18next";
-import { fetchCoins, fetchCoinById } from "../lib/coinApi";
 import CoinList from "./components/CoinList";
 import Loader from "./components/Loader";
 import ErrorMessage from "./components/Error";
+
+const fetchApi = async (path: string) => {
+  const response = await fetch(`/api/${path}`);
+  if (!response.ok) {
+    throw new Error("API 요청에 실패했습니다.");
+  }
+  return response.json();
+};
+
+const fetchCoinById = async (id: string) => {
+  return fetchApi(`coins/${id}`);
+};
+
+const getTopCoins = async () => {
+  return fetchApi(
+    "coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1"
+  );
+};
 
 type Alert = { id: string; price: number };
 
 const Home = () => {
   const { t } = useTranslation();
-  const router = useRouter();
 
   const [coins, setCoins] = useState<Coin[]>([]);
   const [input, setInput] = useState("");
@@ -38,22 +54,26 @@ const Home = () => {
     order: "desc",
   });
 
-  const fetchCoinsData = useCallback(async () => {
+  const getTopCoinsData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchCoins(filterType, page);
-      setCoins([...data]);
+      const response = await getTopCoins();
+      console.log(response);
+      if (!response) {
+        throw new Error("Failed to fetch coin data");
+      }
+      setCoins(response);
     } catch (error) {
-      setError(t("Failed to fetch coin data. Please try again."));
+      setError(t("코인 데이터를 가져오는 중 오류가 발생했습니다."));
     } finally {
       setIsLoading(false);
     }
-  }, [filterType, page, t]);
+  }, [t]);
 
   useEffect(() => {
-    fetchCoinsData();
-  }, [fetchCoinsData]);
+    getTopCoinsData();
+  }, [getTopCoinsData]);
 
   const handleSearch = useCallback(async () => {
     setIsLoading(true);
@@ -77,7 +97,9 @@ const Home = () => {
     );
     if (!isNaN(price)) {
       setAlerts((prev) => [...prev, { id: input || "global", price }]);
-      Notification.permission !== "granted" && Notification.requestPermission();
+      if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
     }
   }, [input, t]);
 
@@ -94,25 +116,27 @@ const Home = () => {
     }));
   }, []);
 
-  const sortedCoins = [...coins].sort((a, b) => {
-    const getValue = (coin: Coin) => {
-      switch (sortBy.key) {
-        case "price":
-          return coin.market_data?.current_price?.usd || 0;
-        case "24h":
-          return coin.market_data?.price_change_percentage_24h || 0;
-        case "market_cap":
-          return coin.market_data?.market_cap?.usd || 0;
-        default:
-          return 0;
-      }
-    };
+  const sortedCoins = useMemo(() => {
+    return [...coins].sort((a, b) => {
+      const getValue = (coin: Coin) => {
+        switch (sortBy.key) {
+          case "price":
+            return coin.market_data?.current_price?.usd || 0;
+          case "24h":
+            return coin.market_data?.price_change_percentage_24h || 0;
+          case "market_cap":
+            return coin.market_data?.market_cap?.usd || 0;
+          default:
+            return 0;
+        }
+      };
 
-    const valueA = getValue(a);
-    const valueB = getValue(b);
+      const valueA = getValue(a);
+      const valueB = getValue(b);
 
-    return sortBy.order === "asc" ? valueA - valueB : valueB - valueA;
-  });
+      return sortBy.order === "asc" ? valueA - valueB : valueB - valueA;
+    });
+  }, [coins, sortBy]);
 
   useEffect(() => {
     if (alerts.length === 0 || coins.length === 0) return;

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { nftList } from "../../lib/coinApi";
+import { nftList } from "../api/coin/route";
 import Link from "next/link";
 
 type NFT = {

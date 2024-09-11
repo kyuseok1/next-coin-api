@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { exchangeList } from "../../lib/coinApi";
+import { exchangeList } from "../api/coin/route";
 import Link from "next/link";
 
 type Exchange = {

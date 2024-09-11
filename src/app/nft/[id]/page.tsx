@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { fetchNftById } from "../../../lib/coinApi";
+import { fetchNftById } from "../../api/coin/route";
 
 type NFT = {
   id: string;

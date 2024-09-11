@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import CoinChart from "../../../ui/CoinChart";
 import { Coin } from "../../../ui/CoinInfo";
-import { fetchCoinById } from "../../../lib/coinApi";
+import { fetchCoinById } from "../../api/coin/route";
 
 type Params = { id: string };
 type AdditionalData = {
@@ -153,7 +153,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
             <div className="flex items-center justify-center text-sm mb-6">
               {coin.image && (
                 <img
-                  src={coin.image.thumb}
+                  src={coin.image}
                   alt={coin.name}
                   className="w-10 h-10 mr-4 rounded-full shadow-lg"
                 />

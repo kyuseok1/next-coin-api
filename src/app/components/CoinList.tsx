@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { Coin } from "../../ui/CoinInfo";
@@ -25,9 +25,23 @@ const CoinList: React.FC<CoinListProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  // 디버깅용 로그
+  useEffect(() => {
+    console.log("Coins data:", coins);
+  }, [coins]);
+
+  // 데이터가 없는 경우 메시지 표시
+  if (!coins || coins.length === 0) {
+    return <p>{t("코인 데이터가 없습니다.")}</p>;
+  }
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-center">
+    <div
+      className={`overflow-x-auto ${
+        darkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+      }`}
+    >
+      <table className="min-w-full text-center border-collapse">
         <thead>
           <tr>
             <th className="py-3 px-6 text-sm font-semibold">#</th>
@@ -81,28 +95,21 @@ const CoinList: React.FC<CoinListProps> = ({
               <td className="py-3 px-6">
                 <Link href={`/coin/${coin.id}`}>
                   <div className="flex items-center space-x-3">
-                    <img
-                      src={coin.image?.thumb}
-                      alt={coin.name}
-                      className="w-6 h-6"
-                    />
+                    <img src={coin.image} alt={coin.name} className="w-6 h-6" />
                     <span>{coin.name}</span>
                   </div>
                 </Link>
               </td>
               <td className="py-3 px-6">
-                {coin.market_data?.current_price?.usd?.toLocaleString("en-US", {
+                {coin.current_price?.toLocaleString("en-US", {
                   style: "currency",
                   currency: "USD",
                 })}
               </td>
               <td className="py-3 px-6">
-                {coin.market_data?.price_change_percentage_24h?.toFixed(2)}%
+                {coin.price_change_percentage_24h?.toFixed(2)}%
               </td>
-              <td className="py-3 px-6">
-                {coin.market_data?.market_cap?.usd?.toLocaleString()}
-              </td>
-
+              <td className="py-3 px-6">{coin.market_cap?.toLocaleString()}</td>
               <td className="py-3 px-6">
                 <button
                   onClick={() => handleFavorite(coin.id)}

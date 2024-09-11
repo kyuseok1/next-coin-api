@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { fetchCryptoNews } from "../../lib/coinApi";
+import { fetchCryptoNews } from "../api/coin/route";
 import { useTranslation } from "react-i18next";
 
 type NewsArticle = {
@@ -8,9 +8,9 @@ type NewsArticle = {
   url: string;
   description: string;
   author: string | null;
-  updated_at: string; // 문자열로 변경
+  updated_at: string;
   news_site: string;
-  thumb_2x: string | null; // 이미지가 없을 경우를 대비해 null 허용
+  thumb_2x: string | null;
 };
 
 const NewsSection = () => {

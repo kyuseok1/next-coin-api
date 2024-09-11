@@ -22,12 +22,13 @@ type AdditionalData = {
 };
 
 type Coin = {
+  current_price: any;
+  price_change_percentage_24h: any;
+  market_cap: any;
   id: string;
   symbol: string;
   name: string;
-  image: {
-    thumb: string;
-  };
+  image: string;
   market_data: {
     current_price: {
       usd: number;
@@ -49,7 +50,7 @@ type CoinProps = {
 const CoinInfo = ({ coin }: CoinProps) => {
   const currentPrice = coin.market_data?.current_price?.usd ?? "N/A";
   const marketCap = coin.market_data?.market_cap?.usd ?? "N/A";
-  const imageUrl = coin.image?.thumb;
+  const imageUrl = coin.image;
 
   return (
     <div className="text-center">

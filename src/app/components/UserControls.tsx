@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import i18n from "../i18n/i18n";
-import { getGlobalMarketData } from "../../lib/coinApi";
+import { getGlobalMarketData } from "../api/coin/route";
 
 type UserControlsProps = {
   darkMode: boolean;
