@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { Coin } from "../../ui/CoinInfo";
+import { Coin } from "../../ui/CoinInfo"; // Coin 타입 가져오기
 
 type CoinListProps = {
   coins: Coin[];
   darkMode: boolean;
   favorites: string[];
   handleFavorite: (id: string) => void;
+  chartPeriod: string;
+  filterText: string;
   sortBy: {
     key: "price" | "24h" | "market_cap";
     order: "asc" | "desc";
@@ -27,8 +29,35 @@ const CoinList: React.FC<CoinListProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20; // 한 페이지당 보여줄 코인의 개수
 
+  // 정렬된 코인 목록을 계산
+  const sortedCoins = useMemo(() => {
+    const sorted = [...coins].sort((a, b) => {
+      let aValue = 0;
+      let bValue = 0;
+
+      if (sortBy.key === "price") {
+        aValue = a.current_price || 0;
+        bValue = b.current_price || 0;
+      } else if (sortBy.key === "24h") {
+        aValue = a.price_change_percentage_24h || 0;
+        bValue = b.price_change_percentage_24h || 0;
+      } else if (sortBy.key === "market_cap") {
+        aValue = a.market_cap || 0;
+        bValue = b.market_cap || 0;
+      }
+
+      if (sortBy.order === "asc") {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+
+    return sorted;
+  }, [coins, sortBy]);
+
   // 페이지에 맞는 코인 데이터 가져오기
-  const paginatedCoins = coins.slice(
+  const paginatedCoins = sortedCoins.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );

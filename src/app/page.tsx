@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import ParallaxSection from "./components/ParallaxSection";
 import MainContent from "./components/MainContent";
 import { Coin } from "../ui/CoinInfo";
@@ -33,6 +32,7 @@ const Home = () => {
   const { t } = useTranslation();
 
   const [coins, setCoins] = useState<Coin[]>([]);
+  const [trendingCoins, setTrendingCoins] = useState<Coin[]>([]); // 트렌딩 코인 상태 추가
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -42,7 +42,7 @@ const Home = () => {
   const [filterAlerts] = useState<string>("all");
   const [darkMode] = useState(false);
   const [filterText, setFilterText] = useState("");
-  const [filterType, setFilterType] = useState("all");
+  const [filterType, setFilterType] = useState("all"); // 필터 타입 추가
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [error, setError] = useState<string | null>(null);
   const [chartPeriod] = useState("1d");
@@ -54,6 +54,7 @@ const Home = () => {
     order: "desc",
   });
 
+  // 상위 코인 데이터 가져오기
   const getTopCoinsData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -179,16 +180,12 @@ const Home = () => {
     <CoinList
       handleSort={handleSort}
       sortBy={sortBy}
-      {...{
-        coins: sortedCoins,
-        darkMode,
-        favorites,
-        handleFavorite,
-        chartPeriod,
-        filterText,
-        filterType,
-        priceRange,
-      }}
+      coins={filterType === "trending" ? trendingCoins : sortedCoins} // 필터 타입에 따라 트렌딩 코인 또는 전체 코인 표시
+      darkMode={darkMode}
+      favorites={favorites}
+      handleFavorite={handleFavorite}
+      chartPeriod={chartPeriod}
+      filterText={filterText}
     />
   );
 

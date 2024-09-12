@@ -113,7 +113,7 @@ export const getTopCoins = async () => {
   }
 };
 
-const getTrendingCoins = async () => {
+export const getTrendingCoins = async () => {
   const cacheKey = "trendingCoins";
 
   if (cache[cacheKey]) {

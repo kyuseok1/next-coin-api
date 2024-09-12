@@ -1,5 +1,4 @@
 import SearchBar from "../components/SearchBar";
-import CoinFilter from "../components/CoinFilter";
 import AlertManager from "../components/AlertManager";
 import NewsSection from "../components/NewsSection";
 import FavoriteCoins from "../components/FavoriteCoins";
@@ -43,13 +42,6 @@ const MainContent = ({
           <NewsSection />
         </div>
         <div className="flex-[1] flex flex-col items-center">
-          <CoinFilter
-            filterText={filterText}
-            setFilterText={setFilterText}
-            filterType={filterType}
-            setFilterType={setFilterType}
-            darkMode={darkMode}
-          />
           <AlertManager
             alerts={alerts}
             coins={coins}
