@@ -1,9 +1,8 @@
 "use client";
-
 import { useState, useEffect, useCallback } from "react";
 import CoinChart from "../../../ui/CoinChart";
 import { Coin } from "../../../ui/CoinInfo";
-import { fetchCoinById } from "../../api/coin/route";
+import { getCoinData } from "../../api/coin/route";
 
 type Params = { id: string };
 type AdditionalData = {
@@ -22,75 +21,56 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
   const [coin, setCoin] = useState<
     (Coin & { additional?: AdditionalData }) | null
   >(null);
-  const [isLoading, setIsLoading] = useState(true); // 초기 로딩 상태를 true로 설정
+  const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d");
-
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const user = { name: "" };
 
-  const fetchCoinData = async () => {
+  const fetchCoinDetailData = async () => {
     if (!id) return;
     setIsLoading(true);
     try {
-      const [data, additionalDataArray] = await Promise.all([
-        fetch(`/api/coin?coinId=${id}&period=${period}`).then((res) =>
-          res.json()
-        ),
-        fetchCoinById(id),
-      ]);
+      const result = await getCoinData(id, period);
+      console.log("fetchCoinData에서 받은 결과:", result);
 
-      console.log("Fetched data:", data);
-      console.log("Additional data:", additionalDataArray);
+      const prices = result.prices.map(
+        (item: { timestamp: number; price: number }) => ({
+          timestamp: item.timestamp,
+          price: item.price,
+        })
+      );
 
-      const additionalData = additionalDataArray[0];
-      if (data && data.prices && additionalData) {
-        const coinData = {
-          id: data.id || additionalData.id || "",
-          symbol: data.symbol || additionalData.symbol || "",
-          name: data.name || additionalData.name || "",
-          image: {
-            thumb: data.image?.thumb || additionalData.image?.thumb || "",
+      const coinData: Coin = {
+        id,
+        symbol: result.symbol || "",
+        name: result.name || "",
+        image: result.image || "",
+        market_data: {
+          current_price: {
+            usd: result.market_data?.current_price?.usd || 0,
           },
-          market_data: {
-            current_price: {
-              usd:
-                data.market_data?.current_price?.usd ||
-                additionalData.market_data?.current_price?.usd ||
-                0,
-            },
-            market_cap: {
-              usd:
-                data.market_data?.market_cap?.usd ||
-                additionalData.market_data?.market_cap?.usd ||
-                0,
-            },
-            price_change_percentage_24h:
-              data.market_data?.price_change_percentage_24h ||
-              additionalData.market_data?.price_change_percentage_24h ||
-              0,
+          market_cap: {
+            usd: result.market_data?.market_cap?.usd || 0,
           },
-          prices: data.prices.map((item: [number, number]) => ({
-            timestamp: item[0],
-            price: item[1],
-          })),
-          additional: additionalData,
-        };
+          price_change_percentage_24h:
+            result.market_data?.price_change_percentage_24h || 0,
+        },
+        prices: prices,
+        additional: result.additional,
+        current_price: undefined,
+        price_change_percentage_24h: undefined,
+        market_cap: undefined,
+      };
 
-        console.log("Processed coin data:", coinData);
-
-        setCoin(coinData);
-      } else {
-        setCoin(null);
-      }
+      setCoin(coinData);
     } catch (error) {
-      console.error("Error fetching coin data:", error);
+      console.error("코인 데이터를 가져오는 중 오류 발생:", error);
       setCoin(null);
     }
-    setIsLoading(false); // 데이터 페칭 완료 후 로딩 상태 false로 설정
+    setIsLoading(false);
   };
 
   useEffect(() => {
-    fetchCoinData();
+    fetchCoinDetailData();
   }, [id, period]);
 
   const debounce = useCallback(
@@ -105,8 +85,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
   );
 
   const renderDescription = () => {
-    const description =
-      coin?.additional?.description?.en || "No description available.";
+    const description = coin?.additional?.description?.en || "설명이 없습니다.";
     return description.length > 300 ? (
       <>
         {showFullDescription ? description : `${description.slice(0, 300)}...`}
@@ -114,7 +93,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
           onClick={() => setShowFullDescription(!showFullDescription)}
           className="text-blue-500 underline ml-2 text-sm"
         >
-          {showFullDescription ? "Show Less" : "Show More"}
+          {showFullDescription ? "간략히 보기" : "더 보기"}
         </button>
       </>
     ) : (
@@ -142,11 +121,11 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
   );
 
   return (
-    <div className={`min-h-screen  p-6`}>
+    <div className={`min-h-screen p-6`}>
       <div className={`max-w-4xl mx-auto p-8 rounded-lg shadow-lg mt-4`}>
         {isLoading ? (
           <div className="flex justify-center items-center min-h-screen">
-            <div className="text-2xl">Loading...</div>
+            <div className="text-2xl">로딩 중...</div>
           </div>
         ) : coin ? (
           <>
@@ -159,8 +138,8 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
                 />
               )}
               <div className="text-center">
-                <h1 className={`text-base font-bold  mb-1`}>{coin.name}</h1>
-                <p className={`text-lg  mb-2`}>{coin.symbol.toUpperCase()}</p>
+                <h1 className={`text-base font-bold mb-1`}>{coin.name}</h1>
+                <p className={`text-lg mb-2`}>{coin.symbol.toUpperCase()}</p>
                 <p className={`text-xl font-semibold`}>
                   ${coin.market_data?.current_price?.usd?.toFixed(2)}
                 </p>
@@ -182,7 +161,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 text-sm gap-6">
               <div className={`p-4 rounded-lg shadow-md `}>
-                <h2 className="text-2xl font-bold mb-4">Details</h2>
+                <h2 className="text-2xl font-bold mb-4">상세정보</h2>
                 {renderDetail(
                   "Market Cap Rank",
                   coin.additional?.market_cap_rank
@@ -200,11 +179,11 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
                 )}
               </div>
               <div className={`p-4 rounded-lg shadow-md`}>
-                <h2 className="text-2xl font-bold mb-4">Description</h2>
+                <h2 className="text-2xl font-bold mb-4">설명</h2>
                 <p className="text-gray-700">{renderDescription()}</p>
               </div>
               <div className={`p-4 rounded-lg shadow-md`}>
-                <h2 className="text-2xl font-bold mb-4">Links</h2>
+                <h2 className="text-2xl font-bold mb-4">링크</h2>
                 {coin.additional && (
                   <>
                     {renderLink("Homepage", coin.additional.links.homepage[0])}

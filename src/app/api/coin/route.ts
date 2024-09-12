@@ -1,35 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
-// CoinGecko API URL
 const COINGECKO_API_URL = "https://api.coingecko.com/api/v3";
 
 // 메모리 캐시 설정
 const cache: { [key: string]: any } = {};
 
-// 코인 데이터 가져오기
-const getCoinData = async (coinId: string, days: number) => {
-  const cacheKey = `coinData-${coinId}-${days}`;
-
-  if (cache[cacheKey]) {
-    return cache[cacheKey];
-  }
-
+export const getCoinData = async (
+  coinId: string,
+  period: "1d" | "7d" | "30d"
+) => {
   try {
-    const response = await axios.get(
-      `${COINGECKO_API_URL}/coins/${coinId}/market_chart`,
-      {
-        params: {
-          vs_currency: "usd",
-          days: days,
-        },
-      }
+    const vsCurrency = "usd";
+    let days = "1";
+
+    if (period === "7d") {
+      days = "7";
+    } else if (period === "30d") {
+      days = "30";
+    }
+
+    // 가격 차트 데이터 가져오기
+    const marketChartResponse = await fetch(
+      `${COINGECKO_API_URL}/coins/${coinId}/market_chart?vs_currency=${vsCurrency}&days=${days}`
     );
-    const data = response.data;
-    cache[cacheKey] = data; // 캐시 저장
-    return data;
+    if (!marketChartResponse.ok) {
+      throw new Error(
+        `가격 데이터를 가져오는 중 오류 발생: ${marketChartResponse.status}`
+      );
+    }
+    const marketChartData = await marketChartResponse.json();
+
+    // 코인 상세 정보 가져오기
+    const detailResponse = await fetch(`${COINGECKO_API_URL}/coins/${coinId}`);
+    if (!detailResponse.ok) {
+      throw new Error(
+        `상세 정보를 가져오는 중 오류 발생: ${detailResponse.status}`
+      );
+    }
+    const detailData = await detailResponse.json();
+
+    const prices = marketChartData.prices.map((item: [number, number]) => ({
+      timestamp: item[0],
+      price: item[1],
+    }));
+
+    return {
+      prices,
+      symbol: detailData.symbol,
+      name: detailData.name,
+      image: detailData.image.large,
+      market_data: detailData.market_data,
+      additional: {
+        market_cap_rank: detailData.market_cap_rank,
+        hashing_algorithm: detailData.hashing_algorithm,
+        genesis_date: detailData.genesis_date,
+        developer_data: detailData.developer_data,
+        description: detailData.description,
+        links: detailData.links,
+      },
+    };
   } catch (error) {
-    console.error("코인 데이터를 가져오는 중 오류 발생:", error);
+    console.error("데이터를 가져오는 중 오류 발생:", error);
     throw error;
   }
 };
@@ -52,7 +84,7 @@ export const getTopCoins = async () => {
       },
     });
     const data = response.data;
-    cache[cacheKey] = data; // 캐시 저장
+    cache[cacheKey] = data;
     return data;
   } catch (error) {
     console.error("상위 코인 데이터를 가져오는 중 오류 발생:", error);
@@ -60,7 +92,6 @@ export const getTopCoins = async () => {
   }
 };
 
-// 트렌딩 코인 데이터 가져오기
 const getTrendingCoins = async () => {
   const cacheKey = "trendingCoins";
 
@@ -71,7 +102,7 @@ const getTrendingCoins = async () => {
   try {
     const response = await axios.get(`${COINGECKO_API_URL}/search/trending`);
     const data = response.data;
-    cache[cacheKey] = data; // 캐시 저장
+    cache[cacheKey] = data;
     return data;
   } catch (error) {
     console.error("트렌딩 코인 데이터를 가져오는 중 오류 발생:", error);
@@ -136,7 +167,6 @@ export const nftList = async () => {
   }
 };
 
-// 암호화폐 뉴스 가져오기
 export const fetchCryptoNews = async () => {
   const cacheKey = "cryptoNews";
 
@@ -170,7 +200,6 @@ export const fetchCryptoNews = async () => {
   }
 };
 
-// 코인 ID로 코인 데이터 가져오기
 export const fetchCoinById = async (coinId: string) => {
   try {
     const response = await fetch(`${COINGECKO_API_URL}/coins/${coinId}`);
@@ -180,14 +209,35 @@ export const fetchCoinById = async (coinId: string) => {
     }
 
     const data = await response.json();
-    return Array.isArray(data) ? data : [data];
+    return data;
   } catch (error) {
     console.error("코인 데이터를 가져오는 중 오류 발생:", error);
     throw error;
   }
 };
 
-// 페이지별로 코인 데이터 가져오기
+export const fetchCoinData = async (
+  coinId: string,
+  period: "1d" | "7d" | "30d"
+) => {
+  try {
+    const response = await fetch(
+      `${COINGECKO_API_URL}/coins/${coinId}/market_chart?vs_currency=usd&days=${period}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP 오류! 상태: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("받은 데이터:", data);
+    return data;
+  } catch (error) {
+    console.error("코인 데이터를 가져오는 중 오류 발생:", error);
+    throw error;
+  }
+};
+
 const fetchCoins = async () => {
   try {
     const response = await fetch(`${COINGECKO_API_URL}/coins/page`);
@@ -197,34 +247,28 @@ const fetchCoins = async () => {
     }
 
     const data = await response.json();
-    return Array.isArray(data) ? data : [data];
+    return data;
   } catch (error) {
     console.error("코인 데이터를 가져오는 중 오류 발생:", error);
     throw error;
   }
 };
 
-// 거래소 리스트 데이터 가져오기
 export const exchangeList = async () => {
   const cacheKey = "exchangeList";
 
-  // 캐시에 해당 키의 데이터가 있으면 바로 반환합니다.
   if (cache[cacheKey]) {
     return cache[cacheKey];
   }
 
   try {
-    // 프록시 API 라우트로 요청을 보냅니다.
     const response = await fetch("/api/exchanges");
     if (!response.ok) {
       throw new Error("Failed to fetch exchanges");
     }
 
     const data = await response.json();
-
-    // 데이터를 가져온 후 캐시에 저장합니다.
     cache[cacheKey] = data;
-
     return data;
   } catch (error) {
     console.error("Error fetching exchanges:", error);
@@ -232,7 +276,6 @@ export const exchangeList = async () => {
   }
 };
 
-// NFT ID로 NFT 데이터 가져오기
 export const fetchNftById = async (id: string) => {
   const cacheKey = `nft-${id}`;
 
@@ -257,6 +300,8 @@ export async function GET(request: NextRequest) {
   const fetchTrendingCoins = searchParams.get("fetchTrendingCoins") === "true";
   const fetchGlobalMarketData =
     searchParams.get("fetchGlobalMarketData") === "true";
+  const fetchCoinByIdFlag = searchParams.get("fetchCoinById") === "true";
+  const fetchCoinsFlag = searchParams.get("fetchCoins") === "true";
 
   try {
     if (fetchTrendingCoins) {
@@ -265,20 +310,21 @@ export async function GET(request: NextRequest) {
     } else if (fetchGlobalMarketData) {
       const globalMarketData = await getGlobalMarketData();
       return NextResponse.json(globalMarketData);
+    } else if (fetchCoinByIdFlag && coinId) {
+      const coinData = await fetchCoinById(coinId);
+      return NextResponse.json(coinData);
+    } else if (fetchCoinsFlag) {
+      const coinsData = await fetchCoins();
+      return NextResponse.json(coinsData);
     } else if (coinId) {
-      let days: number;
+      // period를 문자열 리터럴 타입으로 변환
+      let days: "1d" | "7d" | "30d";
+
       switch (period) {
         case "1d":
-          days = 1;
-          break;
         case "7d":
-          days = 7;
-          break;
         case "30d":
-          days = 30;
-          break;
-        case "90d":
-          days = 90;
+          days = period;
           break;
         default:
           return NextResponse.json({ error: "잘못된 기간" }, { status: 400 });
