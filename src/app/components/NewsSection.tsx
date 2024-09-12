@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useState } from "react";
 import { fetchCryptoNews } from "../api/coin/route";
 import { useTranslation } from "react-i18next";
@@ -49,8 +48,10 @@ const NewsSection = () => {
                   className="mb-1 w-full h-48 object-cover"
                 />
               )}
-              <h3 className="text-base font-medium">{article.title}</h3>
-              <p className="text-xs">{article.description}</p>
+              <h3 className="text-base font-medium line-clamp-2">
+                {article.title}
+              </h3>
+              <p className="text-xs line-clamp-3">{article.description}</p>
               <p className="text-xs text-gray-500">
                 {`${article.news_site} - ${article.updated_at}`}
               </p>

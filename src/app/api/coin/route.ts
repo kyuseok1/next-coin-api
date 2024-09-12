@@ -3,8 +3,29 @@ import axios from "axios";
 
 const COINGECKO_API_URL = "https://api.coingecko.com/api/v3";
 
-// 메모리 캐시 설정
-const cache: { [key: string]: any } = {};
+// 캐시 유효 기간 5분 설정
+const cacheExpiration = 1000 * 60 * 5; // 5분
+const cache: { [key: string]: { data: any; timestamp: number } } = {};
+
+// 백오프 전략 함수
+const fetchWithBackoff = async (
+  url: string,
+  retries: number = 3,
+  delay: number = 1000
+) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok && response.status === 429 && retries > 0) {
+      console.log(`Too many requests. Retrying in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      return fetchWithBackoff(url, retries - 1, delay * 2); // 지연 시간 증가
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch failed:", error);
+    throw error;
+  }
+};
 
 export const getCoinData = async (
   coinId: string,

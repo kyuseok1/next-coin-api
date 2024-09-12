@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { Coin } from "../../ui/CoinInfo";
@@ -24,6 +24,25 @@ const CoinList: React.FC<CoinListProps> = ({
   handleSort,
 }) => {
   const { t } = useTranslation();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20; // 한 페이지당 보여줄 코인의 개수
+
+  // 페이지에 맞는 코인 데이터 가져오기
+  const paginatedCoins = coins.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // 페이지 수 계산
+  const totalPages = Math.ceil(coins.length / itemsPerPage);
+
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
+  };
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+  };
 
   // 디버깅용 로그
   useEffect(() => {
@@ -86,12 +105,14 @@ const CoinList: React.FC<CoinListProps> = ({
           </tr>
         </thead>
         <tbody>
-          {coins.map((coin, index) => (
+          {paginatedCoins.map((coin, index) => (
             <tr
               key={coin.id}
               className="border-b dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
             >
-              <td className="py-3 px-6">{index + 1}</td>
+              <td className="py-3 px-6">
+                {index + 1 + (currentPage - 1) * itemsPerPage}
+              </td>
               <td className="py-3 px-6">
                 <Link href={`/coin/${coin.id}`}>
                   <div className="flex items-center space-x-3">
@@ -126,6 +147,27 @@ const CoinList: React.FC<CoinListProps> = ({
           ))}
         </tbody>
       </table>
+
+      {/* 페이지네이션 컨트롤 */}
+      <div className="flex justify-center mt-4 space-x-4">
+        <button
+          onClick={handlePreviousPage}
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:bg-gray-400"
+        >
+          {t("이전")}
+        </button>
+        <span className="flex items-center">
+          {t("페이지")} {currentPage} {t("of")} {totalPages}
+        </span>
+        <button
+          onClick={handleNextPage}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded disabled:bg-gray-400"
+        >
+          {t("다음")}
+        </button>
+      </div>
     </div>
   );
 };

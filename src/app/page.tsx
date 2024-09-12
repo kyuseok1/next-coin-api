@@ -73,7 +73,7 @@ const Home = () => {
 
   useEffect(() => {
     getTopCoinsData();
-  }, [getTopCoinsData]);
+  }, []);
 
   const handleSearch = useCallback(async () => {
     setIsLoading(true);
