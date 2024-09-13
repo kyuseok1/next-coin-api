@@ -48,8 +48,8 @@ type CoinProps = {
 };
 
 const CoinInfo = ({ coin }: CoinProps) => {
-  const currentPrice = coin.market_data?.current_price?.usd ?? "N/A";
-  const marketCap = coin.market_data?.market_cap?.usd ?? "N/A";
+  const currentPrice = coin.current_price ?? "N/A";
+  const marketCap = coin.market_cap ?? "N/A";
   const imageUrl = coin.image;
 
   return (
