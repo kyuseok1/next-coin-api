@@ -29,6 +29,12 @@ type Coin = {
   symbol: string;
   name: string;
   image: string;
+  market_cap_rank: number;
+  high_24h: number;
+  low_24h: number;
+  max_supply: number;
+  circulating_supply: number;
+
   market_data: {
     current_price: {
       usd: number;

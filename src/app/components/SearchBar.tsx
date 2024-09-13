@@ -29,7 +29,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       <div className="flex items-center space-x-6 text-gray-700">
         <Link
-          href="#coin"
+          href="/coin"
           className="hover:text-blue-500 hover:underline hover:scale-110 transform transition duration-300 ease-in-out"
         >
           {t("Coins")}
