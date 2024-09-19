@@ -8,8 +8,10 @@ import CoinList from "./components/CoinList";
 import Loader from "./components/Loader";
 import ErrorMessage from "./components/Error";
 
+const COINGECKO_API_URL = "https://api.coingecko.com/api/v3";
+
 const fetchApi = async (path: string) => {
-  const response = await fetch(`/api/${path}`);
+  const response = await fetch(`${COINGECKO_API_URL}/${path}`);
   if (!response.ok) {
     throw new Error("API 요청에 실패했습니다.");
   }
@@ -55,13 +57,13 @@ const Home = () => {
   });
 
   // 상위 코인 데이터 가져오기
-  const getTopCoinsData = useCallback(async () => {
+  const getTopCoinsData = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await getTopCoins();
       console.log(response);
-      if (!response) {
+      if (!Array.isArray(response)) {
         throw new Error("Failed to fetch coin data");
       }
       setCoins(response);
@@ -70,7 +72,7 @@ const Home = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [t]);
+  };
 
   useEffect(() => {
     getTopCoinsData();
@@ -81,7 +83,7 @@ const Home = () => {
     setError(null);
     try {
       const data = await fetchCoinById(input);
-      setCoins(data);
+      setCoins([data]); // 단일 코인을 배열로 감싸서 설정
       setRecentSearches((prev) =>
         Array.from(new Set([input, ...prev])).slice(0, 5)
       );
@@ -89,18 +91,6 @@ const Home = () => {
       setError(t("Failed to fetch coin data. Please try again."));
     } finally {
       setIsLoading(false);
-    }
-  }, [input, t]);
-
-  const handleSetAlert = useCallback(() => {
-    const price = parseFloat(
-      prompt(t("알림을 설정할 가격을 입력하세요:"), "0") || "0"
-    );
-    if (!isNaN(price)) {
-      setAlerts((prev) => [...prev, { id: input || "global", price }]);
-      if (Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
     }
   }, [input, t]);
 
@@ -122,11 +112,11 @@ const Home = () => {
       const getValue = (coin: Coin) => {
         switch (sortBy.key) {
           case "price":
-            return coin.market_data?.current_price?.usd || 0;
+            return coin.current_price || 0;
           case "24h":
-            return coin.market_data?.price_change_percentage_24h || 0;
+            return coin.price_change_percentage_24h || 0;
           case "market_cap":
-            return coin.market_data?.market_cap?.usd || 0;
+            return coin.market_cap || 0;
           default:
             return 0;
         }
@@ -138,35 +128,6 @@ const Home = () => {
       return sortBy.order === "asc" ? valueA - valueB : valueB - valueA;
     });
   }, [coins, sortBy]);
-
-  useEffect(() => {
-    if (alerts.length === 0 || coins.length === 0) return;
-
-    const checkPriceAlerts = () => {
-      alerts.forEach((alert, index) => {
-        const matchingCoin = coins.find(
-          (coin) => alert.id === "global" || alert.id === coin.id
-        );
-
-        if (matchingCoin) {
-          const currentPrice = matchingCoin.market_data?.current_price?.usd;
-
-          if (currentPrice !== undefined && currentPrice >= alert.price) {
-            if (Notification.permission === "granted") {
-              new Notification(
-                `${matchingCoin.name} ${t("이 설정한 가격에 도달했습니다:")} $${
-                  alert.price
-                }`
-              );
-            }
-            setAlerts((prev) => prev.filter((_, i) => i !== index));
-          }
-        }
-      });
-    };
-
-    checkPriceAlerts();
-  }, [alerts, coins, t]);
 
   const handleDeleteAlert = (index: number) => {
     setAlerts((prevAlerts) => prevAlerts.filter((_, i) => i !== index));
@@ -200,7 +161,6 @@ const Home = () => {
         input={input}
         setInput={setInput}
         handleSearch={handleSearch}
-        handleSetAlert={handleSetAlert}
         darkMode={darkMode}
         filterText={filterText}
         setFilterText={setFilterText}

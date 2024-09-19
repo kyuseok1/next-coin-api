@@ -43,13 +43,11 @@ const MainContent = ({
         </div>
         <div className="flex-[1] flex flex-col items-center">
           <AlertManager
-            alerts={alerts}
             coins={coins}
             filterAlerts={filterAlerts}
-            handleDeleteAlert={handleDeleteAlert}
-            setFilterAlerts={() => {}}
-            handleUpdateAlertPrice={() => {}}
-            handleAddAlert={() => {}}
+            setFilterAlerts={function (value: string): void {
+              throw new Error("Function not implemented.");
+            }}
           />
         </div>
         {recentSearches.length > 0 && (

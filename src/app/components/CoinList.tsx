@@ -29,35 +29,8 @@ const CoinList: React.FC<CoinListProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20; // 한 페이지당 보여줄 코인의 개수
 
-  // 정렬된 코인 목록을 계산
-  const sortedCoins = useMemo(() => {
-    const sorted = [...coins].sort((a, b) => {
-      let aValue = 0;
-      let bValue = 0;
-
-      if (sortBy.key === "price") {
-        aValue = a.current_price || 0;
-        bValue = b.current_price || 0;
-      } else if (sortBy.key === "24h") {
-        aValue = a.price_change_percentage_24h || 0;
-        bValue = b.price_change_percentage_24h || 0;
-      } else if (sortBy.key === "market_cap") {
-        aValue = a.market_cap || 0;
-        bValue = b.market_cap || 0;
-      }
-
-      if (sortBy.order === "asc") {
-        return aValue - bValue;
-      } else {
-        return bValue - aValue;
-      }
-    });
-
-    return sorted;
-  }, [coins, sortBy]);
-
   // 페이지에 맞는 코인 데이터 가져오기
-  const paginatedCoins = sortedCoins.slice(
+  const paginatedCoins = coins.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
