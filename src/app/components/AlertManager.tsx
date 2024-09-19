@@ -34,24 +34,18 @@ type Alert = {
 };
 
 type AlertManagerProps = {
-  alerts: Alert[];
   coins: any[];
   filterAlerts: string;
-  handleDeleteAlert: (index: number) => void;
   setFilterAlerts: (value: string) => void;
-  handleUpdateAlertPrice: (index: number, newPrice: number) => void;
-  handleAddAlert: (id: string, price: number) => void;
 };
 
 const AlertManager: React.FC<AlertManagerProps> = ({
-  alerts,
   coins,
   filterAlerts,
-  handleDeleteAlert,
-  handleUpdateAlertPrice,
-  handleAddAlert,
+  setFilterAlerts,
 }) => {
   const { t } = useTranslation();
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newPrice, setNewPrice] = useState<number | string>("");
   const [newAlertId, setNewAlertId] = useState<string>("");
@@ -59,82 +53,87 @@ const AlertManager: React.FC<AlertManagerProps> = ({
   const [showAddAlert, setShowAddAlert] = useState<boolean>(false);
   const [alertSent, setAlertSent] = useState<Set<string>>(new Set());
 
+  // 현재 가격 가져오기 (API 호출 가정)
+  const fetchCurrentPrice = async (id: string) => {
+    // 여기에 실제 API 호출 코드 작성
+    // 예시로 고정된 가격 반환
+    return 100; // 실제 가격을 반환하도록 수정
+  };
+
   // 쿠키에서 알림 로드
   useEffect(() => {
     const savedAlerts = getCookie("alerts");
     if (savedAlerts) {
-      const parsedAlerts = JSON.parse(savedAlerts);
+      const parsedAlerts: Alert[] = JSON.parse(savedAlerts);
+      const updatedAlerts = [...alerts];
 
-      // 중복된 알림이 추가되지 않도록 체크
       parsedAlerts.forEach((alert: Alert) => {
-        const isAlertExist = alerts.some(
+        const isAlertExist = updatedAlerts.some(
           (existingAlert) =>
             existingAlert.id === alert.id && existingAlert.price === alert.price
         );
 
         if (!isAlertExist) {
-          handleAddAlert(alert.id, alert.price);
+          updatedAlerts.push(alert);
         }
       });
+
+      setAlerts(updatedAlerts); // 상태 업데이트
+      saveAlertsToCookie(updatedAlerts); // 쿠키에 저장
     }
-  }, [handleAddAlert, alerts]);
+  }, []);
 
   const saveAlertsToCookie = (alerts: Alert[]) => {
     setCookie("alerts", JSON.stringify(alerts), 7);
   };
 
-  const handleDeleteClick = (index: number) => {
-    handleDeleteAlert(index);
+  const handleDeleteAlert = (index: number) => {
     const updatedAlerts = alerts.filter((_, i) => i !== index);
-    saveAlertsToCookie(updatedAlerts);
+    setAlerts(updatedAlerts); // 상태 업데이트
+    saveAlertsToCookie(updatedAlerts); // 쿠키에 저장
   };
 
-  // 알림 확인 로직
-  useEffect(() => {
-    if (Notification.permission === "granted") {
-      const checkAlerts = () => {
-        alerts.forEach((alert) => {
-          const currentPrice = 100; // API로 받아올 실제 현재 가격
-          const alertKey = `${alert.id}-${alert.price}`;
+  const handleAddAlert = (id: string, price: number) => {
+    const newAlert = { id, price };
+    const updatedAlerts = [...alerts, newAlert];
+    setAlerts(updatedAlerts); // 상태 업데이트
+    saveAlertsToCookie(updatedAlerts); // 쿠키에 저장
+  };
 
-          // 이미 전송된 알림이 있는지 확인
-          if (currentPrice > alert.price && !alertSent.has(alertKey)) {
-            // 브라우저 알림
-            new Notification("Price Alert", {
-              body: `The price of ${alert.id} has exceeded your alert value of $${alert.price}. Current price: $${currentPrice}`,
-            });
-
-            // 콘솔에 알림 찍기
-            console.log(
-              `Alert! The price of ${alert.id} has exceeded the alert value of $${alert.price}. Current price: $${currentPrice}`
-            );
-
-            // 동일한 알림이 다시 발생하지 않도록 상태 업데이트
-            setAlertSent((prev) => {
-              const newAlertSent = new Set(prev);
-              newAlertSent.add(alertKey); // 알림이 트리거된 key 저장
-              return newAlertSent;
-            });
-          }
-        });
-      };
-
-      const intervalId = setInterval(checkAlerts, 60000);
-
-      return () => clearInterval(intervalId);
-    }
-  }, [alerts, alertSent]);
-
+  // 알림 필터링
   const filteredAlerts = useMemo(() => {
-    console.log("Filter alerts state: ", filterAlerts);
     const result = alerts.filter((alert) => {
       if (filterAlerts === "all") return true;
       return alert.id === filterAlerts;
     });
-
-    console.log("Filtered alerts: ", result);
     return result;
   }, [alerts, filterAlerts]);
+
+  useEffect(() => {
+    const checkAlerts = async () => {
+      for (const alert of alerts) {
+        const currentPrice = await fetchCurrentPrice(alert.id);
+        const alertKey = `${alert.id}-${alert.price}`;
+
+        if (currentPrice > alert.price && !alertSent.has(alertKey)) {
+          new Notification("Price Alert", {
+            body: `The price of ${alert.id} has exceeded your alert value of $${alert.price}. Current price: $${currentPrice}`,
+          });
+
+          console.log(
+            `Alert! The price of ${alert.id} has exceeded the alert value of $${alert.price}. Current price: $${currentPrice}`
+          );
+
+          // 이미 보낸 알림으로 상태 업데이트
+          setAlertSent((prev) => new Set(prev).add(alertKey));
+        }
+      }
+    };
+
+    const intervalId = setInterval(checkAlerts, 60000); // 1분마다 확인
+
+    return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 클리어
+  }, [alerts, alertSent]);
 
   const handleEditClick = (index: number, currentPrice: number) => {
     setEditingIndex(index);
@@ -143,13 +142,13 @@ const AlertManager: React.FC<AlertManagerProps> = ({
 
   const handleSaveClick = (index: number) => {
     if (!isNaN(Number(newPrice))) {
-      handleUpdateAlertPrice(index, Number(newPrice));
-      setEditingIndex(null);
-      setNewPrice("");
       const updatedAlerts = alerts.map((alert, i) =>
         i === index ? { ...alert, price: Number(newPrice) } : alert
       );
-      saveAlertsToCookie(updatedAlerts);
+      setAlerts(updatedAlerts); // 상태 업데이트
+      saveAlertsToCookie(updatedAlerts); // 쿠키에 저장
+      setEditingIndex(null);
+      setNewPrice("");
     }
   };
 
@@ -164,11 +163,6 @@ const AlertManager: React.FC<AlertManagerProps> = ({
         setNewAlertId("");
         setNewAlertPrice("");
         setShowAddAlert(false);
-        const updatedAlerts = [
-          ...alerts,
-          { id: newAlertId, price: Number(newAlertPrice) },
-        ];
-        saveAlertsToCookie(updatedAlerts);
       }
     }
   };
@@ -256,7 +250,7 @@ const AlertManager: React.FC<AlertManagerProps> = ({
                   </button>
                 )}
                 <button
-                  onClick={() => handleDeleteClick(index)}
+                  onClick={() => handleDeleteAlert(index)}
                   className="bg-red-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded-lg shadow-md transition duration-300 ease-in-out"
                 >
                   {t("Delete")}

@@ -59,6 +59,11 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
         current_price: undefined,
         price_change_percentage_24h: undefined,
         market_cap: undefined,
+        market_cap_rank: 0,
+        high_24h: 0,
+        low_24h: 0,
+        max_supply: 0,
+        circulating_supply: 0,
       };
 
       setCoin(coinData);
@@ -121,7 +126,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
   );
 
   return (
-    <div className={`min-h-screen p-6`}>
+    <div className={`min-h-screen p-6 `}>
       <div className={`max-w-4xl mx-auto p-8 rounded-lg shadow-lg mt-4`}>
         {isLoading ? (
           <div className="flex justify-center items-center min-h-screen">
@@ -129,7 +134,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
           </div>
         ) : coin ? (
           <>
-            <div className="flex items-center justify-center text-sm mb-6">
+            <div className="flex items-center justify-center text-sm mt-10 mb-6">
               {coin.image && (
                 <img
                   src={coin.image}

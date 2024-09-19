@@ -180,7 +180,7 @@ const Home = () => {
     <CoinList
       handleSort={handleSort}
       sortBy={sortBy}
-      coins={filterType === "trending" ? trendingCoins : sortedCoins} // 필터 타입에 따라 트렌딩 코인 또는 전체 코인 표시
+      coins={filterType === "trending" ? trendingCoins : sortedCoins}
       darkMode={darkMode}
       favorites={favorites}
       handleFavorite={handleFavorite}
