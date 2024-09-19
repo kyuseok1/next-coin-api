@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { nftList } from "../api/coin/route";
 import Link from "next/link";
 
 type NFT = {
@@ -11,6 +10,14 @@ type NFT = {
   contract_address: string;
 };
 
+const fetchNFTList = async () => {
+  const response = await fetch("/api/coin?nftList=true");
+  if (!response.ok) {
+    throw new Error("Failed to fetch NFT data");
+  }
+  return response.json();
+};
+
 const NFTPage: React.FC = () => {
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,7 +26,7 @@ const NFTPage: React.FC = () => {
   useEffect(() => {
     const fetchNFTs = async () => {
       try {
-        const data = await nftList();
+        const data = await fetchNFTList();
         console.log("Fetched NFT List:", data);
         setNfts(data);
       } catch (error) {

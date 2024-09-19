@@ -2,7 +2,15 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import i18n from "../i18n/i18n";
-import { getGlobalMarketData } from "../api/coin/route";
+
+// 서버 API를 통해 글로벌 마켓 데이터를 가져오는 함수
+const fetchGlobalMarketData = async () => {
+  const response = await fetch("/api/coin?fetchGlobalMarketData=true");
+  if (!response.ok) {
+    throw new Error("Failed to fetch global market data");
+  }
+  return response.json();
+};
 
 type MarketData = {
   marketCapChange: number;
@@ -45,14 +53,20 @@ const UserControls: React.FC<UserControlsProps> = ({
           return;
         }
 
-        const data = await getGlobalMarketData();
+        const response = await fetchGlobalMarketData();
+        console.log("Fetched Global Market Data:", response); // 데이터를 콘솔에 출력
+
+        // 'response.data'에 접근하여 필요한 데이터를 가져옴
+        const data = response.data;
+
         setMarketData({
-          marketCapChange: data.data.market_cap_change_percentage_24h_usd,
-          btcDominance: data.data.market_cap_percentage.btc,
-          ethDominance: data.data.market_cap_percentage.eth,
-          activeCryptocurrencies: data.data.active_cryptocurrencies,
-          markets: data.data.markets,
+          marketCapChange: data.market_cap_change_percentage_24h_usd,
+          btcDominance: data.market_cap_percentage.btc,
+          ethDominance: data.market_cap_percentage.eth,
+          activeCryptocurrencies: data.active_cryptocurrencies,
+          markets: data.markets,
         });
+
         setLastFetchTime(now);
       } catch (error) {
         console.error("Error fetching global market data:", error);

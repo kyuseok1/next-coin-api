@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { exchangeList } from "../api/coin/route";
 import Link from "next/link";
 
 type Exchange = {
@@ -17,6 +16,14 @@ type Exchange = {
   trade_volume_24h_btc: number;
 };
 
+const fetchExchangeList = async () => {
+  const response = await fetch("/api/coin?fetchExchangeList=true");
+  if (!response.ok) {
+    throw new Error("Failed to fetch exchange data");
+  }
+  return response.json();
+};
+
 const ExchangePage: React.FC = () => {
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +32,7 @@ const ExchangePage: React.FC = () => {
   useEffect(() => {
     const fetchExchanges = async () => {
       try {
-        const data = await exchangeList();
+        const data = await fetchExchangeList();
         console.log("Fetched Exchange List:", data);
         setExchanges(data);
       } catch (error) {

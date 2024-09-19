@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { fetchNftById } from "../../api/coin/route";
 
 type NFT = {
   id: string;
@@ -35,6 +34,14 @@ type NFT = {
   };
 };
 
+const fetchNftById = async (nftId: string) => {
+  const response = await fetch(`/api/coin?nftId=${nftId}&fetchNftById=true`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch NFT data");
+  }
+  return response.json();
+};
+
 const NFTDetailPage: React.FC = () => {
   const { id } = useParams();
   const nftId = Array.isArray(id) ? id[0] : id;
@@ -42,8 +49,6 @@ const NFTDetailPage: React.FC = () => {
   const [nft, setNft] = useState<NFT | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const user = { name: "" };
 
   useEffect(() => {
     const fetchNFT = async () => {
@@ -72,10 +77,7 @@ const NFTDetailPage: React.FC = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <div
-      className={`min-h-screen 
-       p-8`}
-    >
+    <div className="min-h-screen p-8">
       <h1 className="text-4xl font-bold mb-6">NFT Details</h1>
       {nft && (
         <>

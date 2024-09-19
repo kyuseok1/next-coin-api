@@ -91,6 +91,58 @@ export const getTopCoins = async (
     throw error;
   }
 };
+// nftList 함수 추가
+export const nftList = async () => {
+  const cacheKey = "nftList";
+
+  if (
+    cache[cacheKey] &&
+    Date.now() - cache[cacheKey].timestamp < cacheDuration
+  ) {
+    return cache[cacheKey].data;
+  }
+
+  try {
+    const response = await axios.get(`${COINGECKO_API_URL}/nfts/list`);
+
+    cache[cacheKey] = {
+      data: response.data,
+      timestamp: Date.now(),
+    };
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching NFT list:", error);
+    throw error;
+  }
+};
+export const fetchNftById = async (nftId: string) => {
+  const cacheKey = `nft-${nftId}`;
+
+  // 캐시된 데이터가 있는지 확인
+  if (
+    cache[cacheKey] &&
+    Date.now() - cache[cacheKey].timestamp < cacheDuration
+  ) {
+    return cache[cacheKey].data;
+  }
+
+  try {
+    // CoinGecko API로 NFT 데이터 요청
+    const response = await axios.get(`${COINGECKO_API_URL}/nfts/${nftId}`);
+
+    // 캐시 저장
+    cache[cacheKey] = {
+      data: response.data,
+      timestamp: Date.now(),
+    };
+
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching NFT data for ${nftId}:`, error);
+    throw error;
+  }
+};
 
 export const getCoinData = async (
   coinId: string,
@@ -127,7 +179,33 @@ export const getCoinData = async (
     throw error;
   }
 };
+export const exchangeList = async () => {
+  const cacheKey = "exchangeList";
 
+  // 캐시된 데이터가 있는지 확인
+  if (
+    cache[cacheKey] &&
+    Date.now() - cache[cacheKey].timestamp < cacheDuration
+  ) {
+    return cache[cacheKey].data;
+  }
+
+  try {
+    // CoinGecko API로 거래소 데이터 요청
+    const response = await axios.get(`${COINGECKO_API_URL}/exchanges`);
+
+    // 캐시 저장
+    cache[cacheKey] = {
+      data: response.data,
+      timestamp: Date.now(),
+    };
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching exchange list:", error);
+    throw error;
+  }
+};
 export const getGlobalMarketData = async () => {
   const cacheKey = "globalMarketData";
 
@@ -163,6 +241,10 @@ export async function GET(request: NextRequest) {
     searchParams.get("fetchGlobalMarketData") === "true";
   const fetchCoinByIdFlag = searchParams.get("fetchCoinById") === "true";
   const fetchCoinsFlag = searchParams.get("fetchCoins") === "true";
+  const fetchNftByIdFlag = searchParams.get("fetchNftById") === "true";
+  const fetchExchangeListFlag =
+    searchParams.get("fetchExchangeList") === "true"; // 추가된 부분
+  const nftId = searchParams.get("nftId"); // NFT ID 가져오기
   const per_page = Number(searchParams.get("per_page")) || 100;
 
   try {
@@ -180,6 +262,13 @@ export async function GET(request: NextRequest) {
     } else if (fetchCoinsFlag) {
       const topCoins = await getTopCoins("usd", per_page);
       response = NextResponse.json(topCoins);
+    } else if (fetchNftByIdFlag && nftId) {
+      const nftData = await fetchNftById(nftId);
+      response = NextResponse.json(nftData);
+    } else if (fetchExchangeListFlag) {
+      // 거래소 데이터를 요청할 경우
+      const exchangeData = await exchangeList();
+      response = NextResponse.json(exchangeData);
     } else {
       response = NextResponse.json(
         { error: "Invalid request" },

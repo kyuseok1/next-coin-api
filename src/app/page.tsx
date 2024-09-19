@@ -8,10 +8,8 @@ import CoinList from "./components/CoinList";
 import Loader from "./components/Loader";
 import ErrorMessage from "./components/Error";
 
-const COINGECKO_API_URL = "https://api.coingecko.com/api/v3";
-
 const fetchApi = async (path: string) => {
-  const response = await fetch(`${COINGECKO_API_URL}/${path}`);
+  const response = await fetch(`/api/coin${path}`);
   if (!response.ok) {
     throw new Error("API 요청에 실패했습니다.");
   }
@@ -19,13 +17,11 @@ const fetchApi = async (path: string) => {
 };
 
 const fetchCoinById = async (id: string) => {
-  return fetchApi(`coins/${id}`);
+  return fetchApi(`?fetchCoinById=true&coinId=${id}`);
 };
 
 const getTopCoins = async () => {
-  return fetchApi(
-    "coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1"
-  );
+  return fetchApi("?fetchCoins=true");
 };
 
 type Alert = { id: string; price: number };
