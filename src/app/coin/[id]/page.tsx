@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import CoinChart from "../../../ui/CoinChart";
 import { Coin } from "../../../ui/CoinInfo";
+import { getCoinData } from "../../api/coin/route";
 
 const fetchCoinDetailById = async (id: string) => {
   const response = await fetch(
@@ -23,24 +24,25 @@ type AdditionalData = {
   description: { en: string };
   links: { homepage: string[]; whitepaper: string };
 };
-
 type CoinDetailProps = { params: Params };
 
 const CoinDetail = ({ params }: CoinDetailProps) => {
   const { id } = params;
+
   const [coin, setCoin] = useState<
     (Coin & { additional?: AdditionalData }) | null
   >(null);
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState<"1d" | "7d" | "30d">("7d");
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [chartData, setChartData] = useState([]);
 
   const fetchCoinDetailData = async () => {
     if (!id) return;
     setIsLoading(true);
     try {
       const result = await fetchCoinDetailById(id);
-      console.log("API 응답 데이터:", result); // <-- API 응답 확인
+      console.log("API 응답 데이터:", result);
 
       const prices = result?.market_data?.prices
         ? result.market_data.prices.map((item: [number, number]) => ({
@@ -48,8 +50,6 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
             price: item[1],
           }))
         : [];
-
-      console.log("가공된 prices 데이터:", prices); // <-- 가공된 prices 배열 확인
 
       const coinData: Coin = {
         id,
@@ -66,7 +66,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
           price_change_percentage_24h:
             result.market_data?.price_change_percentage_24h || 0,
         },
-        prices: prices, // prices 데이터 처리 완료
+        prices: prices,
         current_price: result.market_data?.current_price?.usd || 0,
         price_change_percentage_24h:
           result.market_data?.price_change_percentage_24h || 0,
@@ -87,7 +87,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
       };
 
       setCoin(coinData);
-      console.log("최종 coin 데이터:", coinData); // <-- coin 객체 확인
+      console.log("최종 coin 데이터:", coinData);
     } catch (error) {
       console.error("코인 데이터를 가져오는 중 오류 발생:", error);
       setCoin(null);
@@ -95,9 +95,32 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
     setIsLoading(false);
   };
 
+  const fetchChartData = async (
+    coinId: string,
+    selectedPeriod: "1d" | "7d" | "30d"
+  ) => {
+    try {
+      const data = await getCoinData(coinId, selectedPeriod);
+      const processedData = data.prices.map((item: [number, number]) => ({
+        timestamp: item[0],
+        price: item[1],
+      }));
+      setChartData(processedData);
+      console.log("차트 데이터:", processedData);
+    } catch (error) {
+      console.error("차트 데이터를 가져오는 중 오류 발생:", error);
+    }
+  };
+
   useEffect(() => {
     fetchCoinDetailData();
   }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchChartData(id, period);
+    }
+  }, [id, period]);
 
   const debounce = useCallback(
     <F extends (...args: any[]) => void>(func: F, delay: number): F => {
@@ -147,8 +170,8 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
   );
 
   return (
-    <div className={`min-h-screen p-6 `}>
-      <div className={`max-w-4xl mx-auto p-8 rounded-lg shadow-lg mt-4`}>
+    <div className="min-h-screen p-6">
+      <div className="max-w-4xl mx-auto p-8 rounded-lg shadow-lg mt-4">
         {isLoading ? (
           <div className="flex justify-center items-center min-h-screen">
             <div className="text-2xl">로딩 중...</div>
@@ -164,9 +187,9 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
                 />
               )}
               <div className="text-center">
-                <h1 className={`text-base font-bold mb-1`}>{coin.name}</h1>
-                <p className={`text-lg mb-2`}>{coin.symbol.toUpperCase()}</p>
-                <p className={`text-xl font-semibold`}>
+                <h1 className="text-base font-bold mb-1">{coin.name}</h1>
+                <p className="text-lg mb-2">{coin.symbol.toUpperCase()}</p>
+                <p className="text-xl font-semibold">
                   ${coin.market_data?.current_price?.usd?.toFixed(2)}
                 </p>
                 {coin.market_data?.price_change_percentage_24h !==
@@ -185,8 +208,9 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
               </div>
             </div>
 
+            {/* Detailed Information Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 text-sm gap-6">
-              <div className={`p-4 rounded-lg shadow-md `}>
+              <div className="p-4 rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold mb-4">상세정보</h2>
                 {renderDetail(
                   "Market Cap Rank",
@@ -204,21 +228,29 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
                   coin.additional?.developer_data.total_issues
                 )}
               </div>
-              <div className={`p-4 rounded-lg shadow-md`}>
+
+              <div className="p-4 rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold mb-4">설명</h2>
                 <p className="text-gray-700">{renderDescription()}</p>
               </div>
-              <div className={`p-4 rounded-lg shadow-md`}>
+
+              <div className="p-4 rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold mb-4">링크</h2>
                 {coin.additional && (
                   <>
-                    {renderLink("Homepage", coin.additional.links.homepage[0])}
-                    {renderLink("Whitepaper", coin.additional.links.whitepaper)}
+                    {coin.additional.links.homepage[0] &&
+                      renderLink("Homepage", coin.additional.links.homepage[0])}
+                    {coin.additional.links.whitepaper &&
+                      renderLink(
+                        "Whitepaper",
+                        coin.additional.links.whitepaper
+                      )}
                   </>
                 )}
               </div>
             </div>
 
+            {/* Chart Section */}
             <div className="mt-8">
               <div className="flex justify-center mb-6 space-x-2">
                 {["1d", "7d", "30d"].map((p) => (
@@ -237,7 +269,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
                   </button>
                 ))}
               </div>
-              <CoinChart prices={coin.prices || []} period={period} />
+              <CoinChart prices={chartData} period={period} />
             </div>
           </>
         ) : (

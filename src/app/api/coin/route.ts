@@ -191,7 +191,7 @@ export const getCoinData = async (
       data: response.data,
       timestamp: Date.now(),
     };
-
+    console.log("getcoindata:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching coin data:", error);

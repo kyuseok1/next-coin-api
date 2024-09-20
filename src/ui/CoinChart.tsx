@@ -11,6 +11,8 @@ import {
   Legend,
   TimeScale,
 } from "chart.js";
+// 어댑터 import 추가
+import "chartjs-adapter-date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -29,6 +31,7 @@ type CoinChartProps = {
 };
 
 const CoinChart = ({ prices, period }: CoinChartProps) => {
+  console.log(prices);
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState<any>(null);
   const [chartReady, setChartReady] = useState(false);
@@ -41,12 +44,12 @@ const CoinChart = ({ prices, period }: CoinChartProps) => {
       );
 
       const data = {
-        labels: prices.map((point) => new Date(point.timestamp * 1000)),
+        labels: prices.map((point) => new Date(point.timestamp)),
         datasets: [
           {
             label: "Price",
             data: prices.map((point) => ({
-              x: new Date(point.timestamp * 1000),
+              x: new Date(point.timestamp),
               y: point.price,
             })),
             borderColor: "rgba(75, 192, 192, 1)",
