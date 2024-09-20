@@ -11,7 +11,6 @@ import {
   Legend,
   TimeScale,
 } from "chart.js";
-import "chartjs-adapter-date-fns";
 
 ChartJS.register(
   CategoryScale,

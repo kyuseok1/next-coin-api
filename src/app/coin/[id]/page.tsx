@@ -2,7 +2,17 @@
 import { useState, useEffect, useCallback } from "react";
 import CoinChart from "../../../ui/CoinChart";
 import { Coin } from "../../../ui/CoinInfo";
-import { getCoinData } from "../../api/coin/route";
+
+const fetchCoinDetailById = async (id: string) => {
+  const response = await fetch(
+    `/api/coin?coinId=${id}&fetchCoinDetailById=true`
+  );
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    throw new Error(`Failed to fetch coin detail: ${errorMessage}`);
+  }
+  return response.json();
+};
 
 type Params = { id: string };
 type AdditionalData = {
@@ -29,21 +39,23 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
     if (!id) return;
     setIsLoading(true);
     try {
-      const result = await getCoinData(id, period);
-      console.log("fetchCoinData에서 받은 결과:", result);
+      const result = await fetchCoinDetailById(id);
+      console.log("API 응답 데이터:", result); // <-- API 응답 확인
 
-      const prices = result.prices.map(
-        (item: { timestamp: number; price: number }) => ({
-          timestamp: item.timestamp,
-          price: item.price,
-        })
-      );
+      const prices = result?.market_data?.prices
+        ? result.market_data.prices.map((item: [number, number]) => ({
+            timestamp: item[0],
+            price: item[1],
+          }))
+        : [];
+
+      console.log("가공된 prices 데이터:", prices); // <-- 가공된 prices 배열 확인
 
       const coinData: Coin = {
         id,
         symbol: result.symbol || "",
         name: result.name || "",
-        image: result.image || "",
+        image: result.image?.large || "",
         market_data: {
           current_price: {
             usd: result.market_data?.current_price?.usd || 0,
@@ -54,19 +66,28 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
           price_change_percentage_24h:
             result.market_data?.price_change_percentage_24h || 0,
         },
-        prices: prices,
-        additional: result.additional,
-        current_price: undefined,
-        price_change_percentage_24h: undefined,
-        market_cap: undefined,
-        market_cap_rank: 0,
-        high_24h: 0,
-        low_24h: 0,
-        max_supply: 0,
-        circulating_supply: 0,
+        prices: prices, // prices 데이터 처리 완료
+        current_price: result.market_data?.current_price?.usd || 0,
+        price_change_percentage_24h:
+          result.market_data?.price_change_percentage_24h || 0,
+        market_cap: result.market_data?.market_cap?.usd || 0,
+        market_cap_rank: result.market_cap_rank || 0,
+        high_24h: result.market_data?.high_24h || 0,
+        low_24h: result.market_data?.low_24h || 0,
+        max_supply: result.market_data?.max_supply || 0,
+        circulating_supply: result.market_data?.circulating_supply || 0,
+        additional: {
+          market_cap_rank: result.market_cap_rank,
+          hashing_algorithm: result.hashing_algorithm,
+          genesis_date: result.genesis_date,
+          developer_data: result.developer_data,
+          description: result.description,
+          links: result.links,
+        },
       };
 
       setCoin(coinData);
+      console.log("최종 coin 데이터:", coinData); // <-- coin 객체 확인
     } catch (error) {
       console.error("코인 데이터를 가져오는 중 오류 발생:", error);
       setCoin(null);
@@ -76,7 +97,7 @@ const CoinDetail = ({ params }: CoinDetailProps) => {
 
   useEffect(() => {
     fetchCoinDetailData();
-  }, [id, period]);
+  }, [id]);
 
   const debounce = useCallback(
     <F extends (...args: any[]) => void>(func: F, delay: number): F => {

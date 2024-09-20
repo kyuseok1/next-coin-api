@@ -116,6 +116,25 @@ export const nftList = async () => {
     throw error;
   }
 };
+
+export const fetchCoinDetailById = async (coinId: string) => {
+  const cacheKey = `coinDetail-${coinId}`;
+
+  try {
+    const response = await axios.get(`${COINGECKO_API_URL}/coins/${coinId}`);
+
+    cache[cacheKey] = {
+      data: response.data,
+      timestamp: Date.now(),
+    };
+
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching coin detail data for ${coinId}:`, error);
+    throw error;
+  }
+};
+
 export const fetchNftById = async (nftId: string) => {
   const cacheKey = `nft-${nftId}`;
 
@@ -242,9 +261,11 @@ export async function GET(request: NextRequest) {
   const fetchCoinByIdFlag = searchParams.get("fetchCoinById") === "true";
   const fetchCoinsFlag = searchParams.get("fetchCoins") === "true";
   const fetchNftByIdFlag = searchParams.get("fetchNftById") === "true";
+  const fetchCoinDetailByIdFlag =
+    searchParams.get("fetchCoinDetailById") === "true"; // 추가된 부분
   const fetchExchangeListFlag =
-    searchParams.get("fetchExchangeList") === "true"; // 추가된 부분
-  const nftId = searchParams.get("nftId"); // NFT ID 가져오기
+    searchParams.get("fetchExchangeList") === "true"; // 거래소 데이터 플래그
+  const nftId = searchParams.get("nftId");
   const per_page = Number(searchParams.get("per_page")) || 100;
 
   try {
@@ -265,8 +286,11 @@ export async function GET(request: NextRequest) {
     } else if (fetchNftByIdFlag && nftId) {
       const nftData = await fetchNftById(nftId);
       response = NextResponse.json(nftData);
+    } else if (fetchCoinDetailByIdFlag && coinId) {
+      // 코인 세부 정보를 요청할 경우
+      const coinDetailData = await fetchCoinDetailById(coinId);
+      response = NextResponse.json(coinDetailData);
     } else if (fetchExchangeListFlag) {
-      // 거래소 데이터를 요청할 경우
       const exchangeData = await exchangeList();
       response = NextResponse.json(exchangeData);
     } else {
