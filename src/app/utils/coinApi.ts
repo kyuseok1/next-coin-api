@@ -194,3 +194,27 @@ export const getGlobalMarketData = async () => {
     throw error;
   }
 };
+export const fetchNftList = async () => {
+  const cacheKey = "nftList";
+
+  if (
+    cache[cacheKey] &&
+    Date.now() - cache[cacheKey].timestamp < cacheDuration
+  ) {
+    return cache[cacheKey].data;
+  }
+
+  try {
+    const response = await axios.get(`${COINGECKO_API_URL}/nfts/list`);
+
+    cache[cacheKey] = {
+      data: response.data,
+      timestamp: Date.now(),
+    };
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching NFT list:", error);
+    throw error;
+  }
+};

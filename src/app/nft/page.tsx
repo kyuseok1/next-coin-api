@@ -11,7 +11,7 @@ type NFT = {
 };
 
 const fetchNFTList = async () => {
-  const response = await fetch("/api/coin?nftList=true");
+  const response = await fetch("/api/coin?fetchNftList=true");
   if (!response.ok) {
     throw new Error("Failed to fetch NFT data");
   }

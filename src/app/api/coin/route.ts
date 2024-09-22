@@ -7,6 +7,7 @@ import {
   fetchCoinDetailById,
   exchangeList,
   getGlobalMarketData,
+  fetchNftList, // NFT 목록 가져오는 함수 추가
 } from "../../../app/utils/coinApi";
 
 const setCorsHeaders = (response: NextResponse) => {
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
   const fetchCoinByIdFlag = searchParams.get("fetchCoinById") === "true";
   const fetchCoinsFlag = searchParams.get("fetchCoins") === "true";
   const fetchNftByIdFlag = searchParams.get("fetchNftById") === "true";
+  const fetchNftListFlag = searchParams.get("fetchNftList") === "true"; // NFT 목록 플래그 추가
   const fetchCoinDetailByIdFlag =
     searchParams.get("fetchCoinDetailById") === "true";
   const fetchExchangeListFlag =
@@ -51,6 +53,10 @@ export async function GET(request: NextRequest) {
     } else if (fetchNftByIdFlag && nftId) {
       const nftData = await fetchNftById(nftId);
       response = NextResponse.json(nftData);
+    } else if (fetchNftListFlag) {
+      // NFT 목록 요청 처리 추가
+      const nftList = await fetchNftList();
+      response = NextResponse.json(nftList);
     } else if (fetchCoinDetailByIdFlag && coinId) {
       const coinDetailData = await fetchCoinDetailById(coinId);
       response = NextResponse.json(coinDetailData);
