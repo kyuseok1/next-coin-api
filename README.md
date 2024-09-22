@@ -114,8 +114,9 @@ https://next-coin-api.vercel.app/ <br><br>
   - `React Hooks`: `useState`를 사용하여 알림 필터 상태 관리.
 
 <br><br>
+## 트러블 슈팅 문제 해결
 
-## CoinList 컴포넌트 중복 코인 트러블 슈팅 문제 해결
+## 1. CoinList 컴포넌트 중복 코인 
 
 ### 문제 설명
 `CoinList` 컴포넌트를 개발하는 동안 동일한 코인이 리스트에 중복으로 렌더링되는 문제가 발생했습니다. 이 섹션은 문제 해결 과정을 문서화한 것입니다.
