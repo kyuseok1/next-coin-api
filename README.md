@@ -206,15 +206,42 @@ https://next-coin-api.vercel.app/ <br><br>
     );
     ```
 
-### 결론
+### 느낀점
 이러한 단계를 구현함으로써 중복 코인 항목 문제를 성공적으로 해결했습니다. 핵심은 필터와 렌더링을 적용하기 전에 고유한 항목을 보장하는 것이었습니다. 이 접근 방식은 암호화폐 데이터를 깨끗하고 효율적이며 사용자 친화적으로 표현할 수 있도록 합니다.
 
 
 
 <br><br><br><br><br><br>
 
+## 2. Npm Run build시 에러
 
+## 문제 설명
+로컬에선 정상 작동했지만 npm run build시 Type 'OmitWithTag<typeof import("C:/Users/\uADDC\uC11D/coin-api-site/src/app/api/coin/route"), "GET" | "HEAD" | "OPTIONS" | "POST" | "PUT" | "DELETE" | "PATCH" | "config" | "generateStaticParams" | "revalidate" | ... 5 more ... | "maxDuration", "">' does not satisfy the constraint '{ [x: string]: never; }'. 에러가 뜸
 
+## 문제 원인
+GET은 HTTP 메서드( HEAD, POST, PUT,  등) 만 내보낼 수 있기 때문입니다 . 지원되지 않는 메서드가 호출되면 Next.js는 오류를 반환합니다
 
+## 문제 식별 및 해결 과정
+유틸 파일 따로 생성
+src/app/utils/coinApi.ts파일을 만들어 API 호출 관련 로직들을 한 곳에 모았습니다. 이 파일에는 코인 데이터를 가져오는 함수, 중복 제거, 필터링 등의 복잡한 로직을 포함시킬 수 있습니다.
 
+```typescript
+
+import axios from "axios";
+
+const COINGECKO_API_URL = "https://api.coingecko.com/api/v3";
+
+// 예시: 코인 데이터를 가져오는 유틸리티 함수
+export const getTopCoins = async (vs_currency: string = "usd", per_page: number = 100) => {
+  const response = await axios.get(`${COINGECKO_API_URL}/coins/markets`, {
+    params: { vs_currency, order: "market_cap_desc", per_page, page: 1 },
+  });
+  return response.data;
+};
+
+// 추가로 다른 API 관련 함수들 작성 가능
+```
+## 느낀점
+이 문제를 해결하면서, API 라우트 파일에서 단일 책임 원칙을 적용하는 것이 얼마나 중요한지 깨달았습니다. API 라우트 파일은 HTTP 메서드 처리에 집중하고, 데이터 처리나 복잡한 로직은 유틸리티 파일로 분리하는 것이 코드의 유지보수성과 가독성을 크게 향상시킬 수 있었습니다. 또한, 타입스크립트를 사용하는 프로젝트에서 타입 오류를 미리 확인하고 해결하는 것이 안정적인 배포를 위해 필수적이라는 점을 다시 한번 깨달았습니다.
+<br><br><br><br><br><br>
 
