@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchCryptoNews } from "../api/coin/route";
+import { fetchCryptoNews } from "../../app/utils/coinApi";
 import { useTranslation } from "react-i18next";
 
 type NewsArticle = {

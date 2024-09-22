@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import CoinChart from "../../../ui/CoinChart";
 import { Coin } from "../../../ui/CoinInfo";
-import { getCoinData } from "../../api/coin/route";
+import { getCoinData } from "../../utils/coinApi";
 
 const fetchCoinDetailById = async (id: string) => {
   const response = await fetch(
