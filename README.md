@@ -114,8 +114,9 @@ https://next-coin-api.vercel.app/ <br><br>
   - `React Hooks`: `useState`를 사용하여 알림 필터 상태 관리.
 
 <br><br>
+## 트러블 슈팅 문제 해결
 
-## CoinList 컴포넌트 중복 코인 트러블 슈팅 문제 해결
+## 1. CoinList 컴포넌트 중복 코인 
 
 ### 문제 설명
 `CoinList` 컴포넌트를 개발하는 동안 동일한 코인이 리스트에 중복으로 렌더링되는 문제가 발생했습니다. 이 섹션은 문제 해결 과정을 문서화한 것입니다.
@@ -205,12 +206,77 @@ https://next-coin-api.vercel.app/ <br><br>
     );
     ```
 
-### 결론
+### 느낀점
 이러한 단계를 구현함으로써 중복 코인 항목 문제를 성공적으로 해결했습니다. 핵심은 필터와 렌더링을 적용하기 전에 고유한 항목을 보장하는 것이었습니다. 이 접근 방식은 암호화폐 데이터를 깨끗하고 효율적이며 사용자 친화적으로 표현할 수 있도록 합니다.
 
 
 
 <br><br><br><br><br><br>
+
+## 2. Npm Run build시 에러
+
+## 문제 설명
+로컬에선 정상 작동했지만 npm run build시 Type 'OmitWithTag<typeof import("C:/Users/\uADDC\uC11D/coin-api-site/src/app/api/coin/route"), "GET" | "HEAD" | "OPTIONS" | "POST" | "PUT" | "DELETE" | "PATCH" | "config" | "generateStaticParams" | "revalidate" | ... 5 more ... | "maxDuration", "">' does not satisfy the constraint '{ [x: string]: never; }'. 에러가 뜸
+
+## 문제 원인
+GET은 HTTP 메서드( HEAD, POST, PUT,  등) 만 내보낼 수 있기 때문입니다 . 지원되지 않는 메서드가 호출되면 Next.js는 오류를 반환합니다
+
+## 문제 식별 및 해결 과정
+유틸 파일 따로 생성
+src/app/utils/coinApi.ts파일을 만들어 API 호출 관련 로직들을 한 곳에 모았습니다. 이 파일에는 코인 데이터를 가져오는 함수, 중복 제거, 필터링 등의 복잡한 로직을 포함시킬 수 있습니다.
+
+```typescript
+
+import axios from "axios";
+
+const COINGECKO_API_URL = "https://api.coingecko.com/api/v3";
+
+// 예시: 코인 데이터를 가져오는 유틸리티 함수
+export const getTopCoins = async (vs_currency: string = "usd", per_page: number = 100) => {
+  const response = await axios.get(`${COINGECKO_API_URL}/coins/markets`, {
+    params: { vs_currency, order: "market_cap_desc", per_page, page: 1 },
+  });
+  return response.data;
+};
+
+// 추가로 다른 API 관련 함수들 작성 가능
+```
+## 느낀점
+이 문제를 해결하면서, API 라우트 파일에서 단일 책임 원칙을 적용하는 것이 얼마나 중요한지 깨달았습니다. API 라우트 파일은 HTTP 메서드 처리에 집중하고, 데이터 처리나 복잡한 로직은 유틸리티 파일로 분리하는 것이 코드의 유지보수성과 가독성을 크게 향상시킬 수 있었습니다. 또한, 타입스크립트를 사용하는 프로젝트에서 타입 오류를 미리 확인하고 해결하는 것이 안정적인 배포를 위해 필수적이라는 점을 다시 한번 깨달았습니다.
+<br><br><br><br><br><br>
+
+## 3. Cors 에러 발생
+
+## 문제 설명
+"https://api.coingecko.com/api/v3" 라는 무료 Api를 사용중에 Cors 에러가 발생.
+
+## 문제 원인
+ CORS는 한 출처에서 로드된 웹 페이지가 다른 출처에 요청을 보낼 때 보안상의 이유로 발생하는 문제입니다. 예를 들어, 브라우저에서 https://example.com에서 https://api.example2.com으로 데이터를 요청할 때 CORS 정책에 의해 브라우저에서 요청을 차단할 수 있습니다. 서버가 해당 요청을 허용하지 않는다면 CORS 에러가 발생합니다.
+
+## 문제 식별 및 해결 과정
+1. fetchApi 함수 사용: CORS 에러를 피하기 위해, 클라이언트 측에서 외부 API로 직접 요청하는 대신, Next.js의 API 경로 (/api/coin)를 사용하여 백엔드 서버에서 외부 API 요청을 처리하도록 설계했습니다. Next.js의 API 라우트를 통해 서버 측에서 외부 API로 요청을 보내면, CORS 에러가 발생하지 않습니다.
+
+```
+typescript
+코드 복사
+const fetchApi = async (path: string) => {
+  const response = await fetch(`/api/coin${path}`);
+  if (!response.ok) {
+    throw new Error("API 요청에 실패했습니다.");
+  }
+  return response.json();
+};
+여기서 /api/coin은 Next.js의 API 경로로, 이 경로에서 서버 측으로 요청이 전달됩니다. 서버 측에서는 외부의 CoinGecko API로 요청을 보내고, 그 결과를 클라이언트로 반환합니다.
+```
+2. 프론트엔드 클라이언트 요청 구조: 프론트엔드에서는 fetchApi를 통해 /api/coin을 요청하면, 서버 측에서 CoinGecko API와 같은 외부 서비스에 요청을 보내고, 결과를 클라이언트로 반환합니다. 이 과정에서 외부 API와 직접 통신하는 것이 아니라, 서버를 통해 데이터를 받아오는 구조이기 때문에 CORS 에러를 피할 수 있습니다.
+
+## 느낀점
+이번 CORS 문제를 해결하는 과정을 통해 클라이언트와 서버 간의 통신 구조에 대한 이해를 더욱 깊이 있게 다질 수 있었습니다. 특히 클라이언트 측에서 발생하는 CORS 에러는 보안상의 이유로 발생하는 일반적인 문제이지만, 이를 해결하는 방법이 다양하다는 것을 다시 한번 깨달았습니다.
+
+<br><br><br><br><br><br>
+
+
+
 
 
 
