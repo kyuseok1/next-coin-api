@@ -19,8 +19,10 @@ const NewsSection = () => {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const response = await fetchCryptoNews();
-        const articlesArray = Array.isArray(response.data) ? response.data : [];
+        const response = await fetch("/api/coin?fetchCryptoNews=true");
+        const result = await response.json();
+
+        const articlesArray = Array.isArray(result.data) ? result.data : [];
         setNewsArticles(articlesArray);
       } catch (error) {
         console.error("Error fetching crypto news:", error);

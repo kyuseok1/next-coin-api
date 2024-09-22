@@ -27,7 +27,6 @@ const eraseCookie = (name: string) => {
   document.cookie = `${name}=; Max-Age=-99999999;`;
 };
 
-// Alert 타입 정의
 type Alert = {
   id: string;
   price: number;
@@ -57,33 +56,22 @@ const AlertManager: React.FC<AlertManagerProps> = ({
   const fetchCurrentPrice = async (id: string) => {
     // 여기에 실제 API 호출 코드 작성
     // 예시로 고정된 가격 반환
-    return 100; // 실제 가격을 반환하도록 수정
+    return 55500;
   };
 
   // 쿠키에서 알림 로드
   useEffect(() => {
     const savedAlerts = getCookie("alerts");
+    console.log("Saved Alerts from Cookie: ", savedAlerts);
     if (savedAlerts) {
       const parsedAlerts: Alert[] = JSON.parse(savedAlerts);
-      const updatedAlerts = [...alerts];
-
-      parsedAlerts.forEach((alert: Alert) => {
-        const isAlertExist = updatedAlerts.some(
-          (existingAlert) =>
-            existingAlert.id === alert.id && existingAlert.price === alert.price
-        );
-
-        if (!isAlertExist) {
-          updatedAlerts.push(alert);
-        }
-      });
-
-      setAlerts(updatedAlerts); // 상태 업데이트
-      saveAlertsToCookie(updatedAlerts); // 쿠키에 저장
+      console.log("Parsed Alerts: ", parsedAlerts);
+      setAlerts(parsedAlerts);
     }
   }, []);
 
   const saveAlertsToCookie = (alerts: Alert[]) => {
+    console.log("Saving Alerts to Cookie:", alerts);
     setCookie("alerts", JSON.stringify(alerts), 7);
   };
 
@@ -96,43 +84,55 @@ const AlertManager: React.FC<AlertManagerProps> = ({
   const handleAddAlert = (id: string, price: number) => {
     const newAlert = { id, price };
     const updatedAlerts = [...alerts, newAlert];
-    setAlerts(updatedAlerts); // 상태 업데이트
-    saveAlertsToCookie(updatedAlerts); // 쿠키에 저장
+    setAlerts(updatedAlerts);
+    saveAlertsToCookie(updatedAlerts);
   };
 
-  // 알림 필터링
   const filteredAlerts = useMemo(() => {
+    console.log("Current alerts:", alerts);
     const result = alerts.filter((alert) => {
       if (filterAlerts === "all") return true;
       return alert.id === filterAlerts;
     });
+    console.log("Filtered Alerts:", result);
     return result;
   }, [alerts, filterAlerts]);
 
+  // 페이지 로드 시 알림 권한 요청
   useEffect(() => {
-    const checkAlerts = async () => {
-      for (const alert of alerts) {
-        const currentPrice = await fetchCurrentPrice(alert.id);
-        const alertKey = `${alert.id}-${alert.price}`;
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }, []);
 
-        if (currentPrice > alert.price && !alertSent.has(alertKey)) {
+  const checkAlerts = async () => {
+    for (const alert of alerts) {
+      const currentPrice = await fetchCurrentPrice(alert.id);
+      const alertKey = `${alert.id}-${alert.price}`;
+
+      // 쿠키에 저장된 가격(alert.price)이 현재 가격(currentPrice)보다 클 때 알림 발송
+      if (currentPrice < alert.price && !alertSent.has(alertKey)) {
+        if (Notification.permission === "granted") {
           new Notification("Price Alert", {
-            body: `The price of ${alert.id} has exceeded your alert value of $${alert.price}. Current price: $${currentPrice}`,
+            body: `The price of ${alert.id} is below your alert value of $${alert.price}. Current price: $${currentPrice}`,
           });
 
           console.log(
-            `Alert! The price of ${alert.id} has exceeded the alert value of $${alert.price}. Current price: $${currentPrice}`
+            `Alert! The price of ${alert.id} is below the alert value of $${alert.price}. Current price: $${currentPrice}`
           );
-
-          // 이미 보낸 알림으로 상태 업데이트
-          setAlertSent((prev) => new Set(prev).add(alertKey));
         }
+
+        setAlertSent((prev) => new Set(prev).add(alertKey));
       }
-    };
+    }
+  };
+
+  useEffect(() => {
+    checkAlerts();
 
     const intervalId = setInterval(checkAlerts, 60000); // 1분마다 확인
 
-    return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 클리어
+    return () => clearInterval(intervalId);
   }, [alerts, alertSent]);
 
   const handleEditClick = (index: number, currentPrice: number) => {
@@ -169,6 +169,7 @@ const AlertManager: React.FC<AlertManagerProps> = ({
 
   return (
     <div className="flex flex-col items-center mb-6">
+      <>{console.log("Current filterAlerts:", filterAlerts)}</>
       <h2 className="text-2xl font-bold mb-4 text-gray-800">
         {t("Price Alerts")}
       </h2>

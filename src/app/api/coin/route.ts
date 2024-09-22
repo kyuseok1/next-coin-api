@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
     searchParams.get("fetchCoinDetailById") === "true";
   const fetchExchangeListFlag =
     searchParams.get("fetchExchangeList") === "true";
+  const fetchCryptoNewsFlag = searchParams.get("fetchCryptoNews") === "true";
   const nftId = searchParams.get("nftId");
   const per_page = Number(searchParams.get("per_page")) || 100;
 
@@ -56,6 +57,9 @@ export async function GET(request: NextRequest) {
     } else if (fetchExchangeListFlag) {
       const exchangeData = await exchangeList();
       response = NextResponse.json(exchangeData);
+    } else if (fetchCryptoNewsFlag) {
+      const cryptoNews = await fetchCryptoNews();
+      response = NextResponse.json(cryptoNews);
     } else {
       response = NextResponse.json(
         { error: "Invalid request" },
